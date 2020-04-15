@@ -73,10 +73,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        //getSupportActionBar().setElevation(0);
-        //getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_search_black_24dp);
-        //getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
         mRequestQueue = Volley.newRequestQueue(this);
 
         // Init view
@@ -175,15 +171,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Get SearchView object.
         SearchView searchView = (SearchView) searchMenu.getActionView();
-        //EditText searchEditText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-        //searchEditText.setTextColor(getResources().getColor(R.color.black));
-        //searchEditText.setHintTextColor(getResources().getColor(R.color.gray));
-
 
         // Get SearchView autocomplete object.
         final SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
         searchAutoComplete.setDropDownBackgroundResource(android.R.color.white);
-        searchAutoComplete.setThreshold(1);
+        searchAutoComplete.setThreshold(3);
 
         // Create a new ArrayAdapter and add data to search auto complete object.
         newsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line);
@@ -222,7 +214,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.length() > 3) {
+                String length = String.valueOf(newText.length());
+                Log.v("Length: ", length);
+
+                if (newText.length() > 1) {
+                    Log.v("Length: ", "Check Length");
                     keyword = newText;
                     handler.removeMessages(TRIGGER_AUTO_COMPLETE);
                     handler.sendEmptyMessageDelayed(TRIGGER_AUTO_COMPLETE, AUTO_COMPLETE_DELAY);
@@ -249,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject hit = jsonArray.getJSONObject(i);
                         newsAdapter.add(jsonArray.getJSONObject(i).getString("displayText"));
                     }
+                    Log.v("Length: ", "Updates");
                     newsAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
