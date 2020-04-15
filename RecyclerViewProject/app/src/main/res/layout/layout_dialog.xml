@@ -52,7 +52,7 @@
             android:adjustViewBounds="true"
             android:background="@android:color/white"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/ic_bookmark_black_24dp" />
+            app:srcCompat="@drawable/ic_bookmark_red_24dp" />
     </LinearLayout>
 
 </LinearLayout>

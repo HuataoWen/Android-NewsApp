@@ -14,12 +14,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class SmallCardAdapter extends RecyclerView.Adapter<SmallCardAdapter.ExampleViewHolder> {
+public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleViewHolder> {
     private Context mContext;
     private ArrayList<SmallCard> newsList;
     private OnItemClickListener onItemClickListener;
 
-    public SmallCardAdapter(Context context, ArrayList<SmallCard> exampleList) {
+    public BigCardAdapter(Context context, ArrayList<SmallCard> exampleList) {
 
         mContext = context;
         newsList = exampleList;
@@ -82,8 +82,7 @@ public class SmallCardAdapter extends RecyclerView.Adapter<SmallCardAdapter.Exam
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            smallCardBookmarkView.setImageResource(R.drawable.ic_bookmark_red_24dp);
-                            //listener.onDeleteClick(position);
+                            listener.onDeleteClick(position);
                         }
                     }
                 }

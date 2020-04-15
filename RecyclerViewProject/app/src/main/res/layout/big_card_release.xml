@@ -16,8 +16,8 @@
 
         <ImageView
             android:id="@+id/smallCardImageView"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
             android:layout_alignParentStart="true"
             android:scaleType="fitXY"
             app:srcCompat="@mipmap/ic_launcher" />
@@ -26,10 +26,8 @@
             android:id="@+id/smallCardTitleView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/smallCardImageView"
-            android:layout_margin="4dp"
-            android:layout_toLeftOf="@id/smallCardBookmarkView"
-            android:layout_toRightOf="@id/smallCardImageView"
+            android:layout_below="@id/smallCardImageView"
+            android:layout_margin="6dp"
             android:ellipsize="end"
             android:maxLines="3"
             android:minLines="3"
@@ -43,21 +41,19 @@
             android:id="@+id/smallCardDateTagView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/smallCardImageView"
-            android:layout_margin="4dp"
-            android:layout_toRightOf="@id/smallCardImageView"
+            android:layout_margin="6dp"
             android:text="Date"
+            android:layout_alignBottom="@id/smallCardBookmarkView"
             android:textColor="@android:color/darker_gray"
             android:textSize="15sp" />
 
         <ImageView
             android:id="@+id/smallCardBookmarkView"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_below="@+id/smallCardTitleView"
-            android:layout_alignTop="@id/smallCardImageView"
             android:layout_alignParentRight="true"
-            android:layout_margin="4dp"
+            android:layout_margin="6dp"
             app:srcCompat="@drawable/ic_bookmark_border_red_24dp" />
 
     </RelativeLayout>
