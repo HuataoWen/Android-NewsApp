@@ -40,7 +40,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONArray;
@@ -214,11 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                String length = String.valueOf(newText.length());
-                Log.v("Length: ", length);
-
                 if (newText.length() > 1) {
-                    Log.v("Length: ", "Check Length");
                     keyword = newText;
                     handler.removeMessages(TRIGGER_AUTO_COMPLETE);
                     handler.sendEmptyMessageDelayed(TRIGGER_AUTO_COMPLETE, AUTO_COMPLETE_DELAY);
@@ -245,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject hit = jsonArray.getJSONObject(i);
                         newsAdapter.add(jsonArray.getJSONObject(i).getString("displayText"));
                     }
-                    Log.v("Length: ", "Updates");
                     newsAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
