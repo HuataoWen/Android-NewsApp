@@ -1,6 +1,9 @@
 package com.example.newsapp;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -35,14 +39,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.concurrent.Delayed;
 
-public class PageHome extends Fragment implements ExampleDialog.ExampleDialogListener {
+public class PageHome extends Fragment {
     private ArrayList<BigCard> newsList;
     private RequestQueue mRequestQueue = null;
     private RecyclerView recyclerView;
     private BigCardAdapter bigCardAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ProgressBar progressBar;
-    ExampleDialog exampleDialog;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Nullable
@@ -52,12 +54,11 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
 
         mSwipeRefreshLayout = view.findViewById(R.id.swiperefresh_items);
         recyclerView = view.findViewById(R.id.recyclerView);
-        progressBar = view.findViewById(R.id.progressBar);
 
         newsList = new ArrayList<>();
         mRequestQueue = Volley.newRequestQueue(getActivity());
 
-        parseJSOn();
+        fetchNews();
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -66,19 +67,18 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
                     newsList.clear();
                     bigCardAdapter.notifyDataSetChanged();
                     MainActivity.showLoader();
-                    //progressBar.setVisibility(View.VISIBLE);
 
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             //Do something after 100ms
-                            parseJSOn();
+                            fetchNews();
                         }
                     }, 2000);
 
                     mSwipeRefreshLayout.setRefreshing(false);
-                    Log.v("refresh","ok");
+                    Log.v("refresh", "ok");
                 }
             }
         });
@@ -94,40 +94,41 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
                 newsList.clear();
                 bigCardAdapter.notifyDataSetChanged();
                 MainActivity.showLoader();
-                //progressBar.setVisibility(View.VISIBLE);
 
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         //Do something after 100ms
-                        parseJSOn();
+                        fetchNews();
                     }
                 }, 2000);
 
-                Log.v("refresh","ok");
+                Log.v("refresh", "ok");
             }
         }
     }
 
-    public void parseJSOn() {
-        String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
+    private void fetchNews() {
+        //String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
+        String url = "http://10.0.2.2:4000/mobile";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    JSONArray jsonArray = response.getJSONArray("hits");
+                    Log.v("fetched", "ok");
+                    JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject hit = jsonArray.getJSONObject(i);
-                        String creatorName = hit.getString("user");
-                        String imageUrl = hit.getString("webformatURL");
-                        //int likeCount = hit.getInt("likes");
-
-                        newsList.add(new BigCard(imageUrl, creatorName, creatorName));
+                        JSONObject newsItem = jsonArray.getJSONObject(i);
+                        String newsId = newsItem.getString("id");
+                        String newsUrl = newsItem.getString("url");
+                        String newsTitle = newsItem.getString("title");
+                        String newsImageUrl = newsItem.getString("urlToImage");
+                        String newsTag = newsItem.getString("tag");
+                        newsList.add(new BigCard(newsId, newsUrl, newsImageUrl, newsTitle, "24m ago | " + newsTag, "Apr 4", getBookmarkIconById(newsId, getActivity())));
                     }
                     MainActivity.hideLoader();
-                    //progressBar.setVisibility(View.INVISIBLE);
                     buildRecyclerView();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -148,9 +149,7 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
 
         layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         //layoutManager = new GridLayoutManager(this, 2);
-
-        bigCardAdapter = new BigCardAdapter(getActivity().getApplicationContext(), newsList);
-
+        bigCardAdapter = new BigCardAdapter(getActivity(), newsList);
         recyclerView.setLayoutManager(layoutManager);
         // Separator
         DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
@@ -159,6 +158,7 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
         recyclerView.setAdapter(bigCardAdapter);
 
         bigCardAdapter.setOnItemClickListener(new BigCardAdapter.OnItemClickListener() {
+            // Open article
             public void onItemClick(int position) {
                 //changeItem(position, "Clicked");
                 Toast.makeText(getActivity(), "Open article", Toast.LENGTH_SHORT).show();
@@ -175,13 +175,95 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
                 //startActivity(detailIntent);
             }
 
-            public void onItemLongClick(int position) {
-                exampleDialog = new ExampleDialog(position, "v.xue.taobao.com/learn.htm?itemId=566048780252");
-                exampleDialog.show(getFragmentManager(), "example dialog");
+            // Expand dialog
+            public void onItemLongClick(final int position) {
+                // Init dialog
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+                LayoutInflater inflater = getActivity().getLayoutInflater();
+                View view = inflater.inflate(R.layout.layout_dialog, null);
+                dialogBuilder.setView(view);
+                ImageButton imageButtonShare = view.findViewById(R.id.imageButton);
+                final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
+                imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), getActivity()));
+                final AlertDialog aLertDialog = dialogBuilder.create();
+                aLertDialog.show();
+
+                // Click share icon
+                imageButtonShare.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getActivity(), "Share", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // Click bookmark icon
+                imageButtonDelete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String newsId = newsList.get(position).getID();
+                        if (LocalStorage.isInBookmark(newsId, getActivity())) {
+                            imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
+                            LocalStorage.deleteNews(newsId, getActivity());
+                            newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
+                            bigCardAdapter.notifyDataSetChanged();
+
+                            //aLertDialog.dismiss();
+
+                            Log.v("unbook", newsId);
+                        } else {
+                            imageButtonDelete.setImageResource(R.drawable.ic_bookmark_red_24dp);
+                            JSONObject news = new JSONObject();
+                            try {
+                                news.put("id", newsId);
+                                news.put("url", newsList.get(position).getIUrl());
+                                news.put("title", newsList.get(position).getTitle());
+                                news.put("urlToImage", newsList.get(position).getImageResource());
+                                news.put("publishDate", newsList.get(position).getPublishDate());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            LocalStorage.insertNews(news, getActivity());
+                            newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
+                            bigCardAdapter.notifyDataSetChanged();
+
+                            Log.v("book", newsId);
+                        }
+                    }
+                });
             }
 
-            public void onDeleteClick(int position) {
-                removeItem(position);
+            // Click bookmark icon on viewpager
+            public void onBookmarkClick(int position) {
+                String newsId = newsList.get(position).getID();
+                if (position != RecyclerView.NO_POSITION) {
+                    if (LocalStorage.isInBookmark(newsId, getActivity())) {
+                        LocalStorage.deleteNews(newsId, getActivity());
+                        newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
+                        bigCardAdapter.notifyDataSetChanged();
+
+                        // Print to log
+                        JSONArray newsList = LocalStorage.getNews(getActivity());
+                        showLocalStorageInLog(newsList);
+                    } else {
+                        JSONObject news = new JSONObject();
+                        try {
+                            news.put("id", newsId);
+                            news.put("url", newsList.get(position).getIUrl());
+                            news.put("title", newsList.get(position).getTitle());
+                            news.put("urlToImage", newsList.get(position).getImageResource());
+                            news.put("publishDate", newsList.get(position).getPublishDate());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        LocalStorage.insertNews(news, getActivity());
+                        newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
+                        bigCardAdapter.notifyDataSetChanged();
+
+                        // Print to log
+                        JSONArray newsList = LocalStorage.getNews(getActivity());
+                        showLocalStorageInLog(newsList);
+                    }
+                }
             }
         });
     }
@@ -201,10 +283,28 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
         bigCardAdapter.notifyItemChanged(position);
     }
 
-    @Override
-    public void delete(int position) {
-        removeItem(position);
-        exampleDialog.dismiss();
-        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
+    public static int getBookmarkIconById(String id, Context context) {
+        if (LocalStorage.isInBookmark(id, context)) {
+            return R.drawable.ic_bookmark_red_24dp;
+        } else {
+            return R.drawable.ic_bookmark_border_red_24dp;
+        }
+    }
+
+    private static void showLocalStorageInLog(JSONArray newsList) {
+        Log.v("info", "----------------");
+        for (int i = 0; i < newsList.length(); i++) {
+            JSONObject tmp = null;
+            try {
+                tmp = newsList.getJSONObject(i);
+                Log.v("id", tmp.getString("id"));
+                Log.v("url", tmp.getString("url"));
+                Log.v("title", tmp.getString("title"));
+                Log.v("urlToImage", tmp.getString("urlToImage"));
+                Log.v("publishDate", tmp.getString("publishDate"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

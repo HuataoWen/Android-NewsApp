@@ -1,11 +1,16 @@
 package com.example.newsapp;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,10 +19,14 @@ import com.example.newsapp.BigCard;
 import com.example.newsapp.R;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleViewHolder> {
-    private Context mContext;
+    private static Context mContext;
     private ArrayList<BigCard> newsList;
     private OnItemClickListener onItemClickListener;
 
@@ -36,21 +45,21 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
 
         void onItemLongClick(int position);
 
-        void onDeleteClick(int position);
+        void onBookmarkClick(int position);
     }
 
     public static class ExampleViewHolder extends RecyclerView.ViewHolder {
-        public ImageView smallCardImageView;
-        public TextView smallCardTitleView;
-        public TextView smallCardDateTagView;
-        public ImageView smallCardBookmarkView;
+        public ImageView bigCardImageView;
+        public TextView bigCardTitleView;
+        public TextView bigCardDateTagView;
+        public ImageView bigCardBookmarkView;
 
         public ExampleViewHolder(@NonNull View itemView, final OnItemClickListener listener) {
             super(itemView);
-            smallCardImageView = itemView.findViewById(R.id.bigCardImageView);
-            smallCardTitleView = itemView.findViewById(R.id.bigCardTitleView);
-            smallCardDateTagView = itemView.findViewById(R.id.bigCardDateTagView);
-            smallCardBookmarkView = itemView.findViewById(R.id.bigCardBookmarkView);
+            bigCardImageView = itemView.findViewById(R.id.bigCardImageView);
+            bigCardTitleView = itemView.findViewById(R.id.bigCardTitleView);
+            bigCardDateTagView = itemView.findViewById(R.id.bigCardDateTagView);
+            bigCardBookmarkView = itemView.findViewById(R.id.bigCardBookmarkView);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -78,15 +87,12 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
                 }
             });
 
-            smallCardBookmarkView.setOnClickListener(new View.OnClickListener() {
+            bigCardBookmarkView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            smallCardBookmarkView.setImageResource(R.drawable.ic_bookmark_red_24dp);
-                            //listener.onDeleteClick(position);
-                        }
+                        int position = getAdapterPosition();  // Get card index
+                        listener.onBookmarkClick(position);
                     }
                 }
             });
@@ -106,19 +112,19 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
         BigCard currentItem = newsList.get(position);
 
         String imageUrl = currentItem.getImageResource();
-        String creatorName = currentItem.getTitle();
+        String newsTitle = currentItem.getTitle();
+        String newsDateTag = currentItem.getDateTag();
+        int newsBookmark = currentItem.getBookmark();
 
-        holder.smallCardTitleView.setText(creatorName);
-        holder.smallCardDateTagView.setText(creatorName);
-        Picasso.with(mContext).load(imageUrl).fit().centerInside().into(holder.smallCardImageView);
-
-        //holder.smallCardImageView.setText(currentItem.getImageResource());
-        //holder.smallCardTitleView.setText(currentItem.getTitle());
-        //holder.smallCardDateTagView.setText(currentItem.getDateTag());
+        Picasso.with(mContext).load(imageUrl).fit().centerInside().into(holder.bigCardImageView);
+        holder.bigCardTitleView.setText(newsTitle);
+        holder.bigCardDateTagView.setText(newsDateTag);
+        holder.bigCardBookmarkView.setImageResource(newsBookmark);
     }
 
     @Override
     public int getItemCount() {
         return newsList.size();
     }
+
 }

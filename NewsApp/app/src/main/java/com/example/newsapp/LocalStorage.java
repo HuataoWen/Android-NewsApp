@@ -109,4 +109,21 @@ public class LocalStorage {
 
         return result;
     }
+
+    public static boolean isInBookmark(String id, Context context) {
+        JSONArray oldNewsList = getNews(context);
+
+        for (int i = 0; i < oldNewsList.length(); i++) {
+            try {
+                JSONObject tmp = new JSONObject();
+                tmp = oldNewsList.getJSONObject(i);
+                if (id.equals(tmp.getString("id"))) {
+                    return true;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
 }
