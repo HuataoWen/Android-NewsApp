@@ -21,24 +21,78 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <ImageView
+                    android:layout_height="400px"
+                    android:layout_margin="7dp"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@android:color/darker_gray"
+                    app:strokeWidth="1dp">
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/zard" />
+                        android:layout_height="match_parent">
+                        <ImageView
+                            android:id="@+id/weatherImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/zard" />
+
+                        <TextView
+                            android:id="@+id/weatherCity"
+                            android:textSize="30dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerInParent="true"
+                            android:layout_marginStart="50dp"
+                            android:layout_marginTop="25dp"
+                            android:text="Los Angeles"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:textSize="20dp"
+                            android:id="@+id/weatherState"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignLeft="@id/weatherCity"
+                            android:layout_marginTop="70dp"
+                            android:text="California"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/weatherTemperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginStart="280dp"
+                            android:layout_alignBottom="@id/weatherCity"
+                            android:text="24°C"
+                            android:textColor="@color/white"
+                            android:textSize="30dp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:textSize="20dp"
+                            android:id="@+id/weatherType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignBottom="@id/weatherState"
+                            android:layout_alignLeft="@id/weatherTemperature"
+                            android:text="Cloud"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                </androidx.recyclerview.widget.RecyclerView>
+                    android:layout_height="match_parent"></androidx.recyclerview.widget.RecyclerView>
             </LinearLayout>
-
         </ScrollView>
-
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
