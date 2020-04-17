@@ -1,37 +1,27 @@
 package com.example.newsapp;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.newsapp.BigCard;
-import com.example.newsapp.R;
 import com.squareup.picasso.Picasso;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
 public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleViewHolder> {
     private static Context mContext;
-    private ArrayList<BigCard> newsList;
+    private ArrayList<NewsCard> newsList;
     private OnItemClickListener onItemClickListener;
+    private String cardType;
 
-    public BigCardAdapter(Context context, ArrayList<BigCard> exampleList) {
-
+    public BigCardAdapter(Context context, String cardType, ArrayList<NewsCard> exampleList) {
+        this.cardType = cardType;
         mContext = context;
         newsList = exampleList;
     }
@@ -103,13 +93,18 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
     @Override
     public ExampleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.big_card, parent, false);
+
+        if (cardType.equals("Small")) {
+            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.small_card, parent, false);
+        }
+
         ExampleViewHolder evh = new ExampleViewHolder(v, onItemClickListener);
         return evh;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ExampleViewHolder holder, int position) {
-        BigCard currentItem = newsList.get(position);
+        NewsCard currentItem = newsList.get(position);
 
         String imageUrl = currentItem.getImageResource();
         String newsTitle = currentItem.getTitle();

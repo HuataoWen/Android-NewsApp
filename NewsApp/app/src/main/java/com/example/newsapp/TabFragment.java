@@ -36,84 +36,54 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class PageHome extends Fragment {
+public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
     private ArrayList<NewsCard> newsList;
-    private RequestQueue mRequestQueue = null;
-    private RecyclerView recyclerView;
-    private BigCardAdapter bigCardAdapter;
+    private String tabSection;
+    private BigCardAdapter bigCardAdapter = null;
     private RecyclerView.LayoutManager layoutManager;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private SwipeRefreshLayout mSwipeRefreshLayout = null;
+    private RequestQueue mRequestQueue = null;
+
+    private RecyclerView recyclerView = null;
+
+
+    public TabFragment(String tabSection) {
+        this.tabSection = tabSection;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.page_home, container, false);
+        View view = inflater.inflate(R.layout.layout_tab, container, false);
+
+        mSwipeRefreshLayout = view.findViewById(R.id.headlinesSwipeRefresh);
+        recyclerView = view.findViewById(R.id.tabRecyclerView);
+        // Separator
+        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        horizontalDivider.setDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.line_divider));
+        recyclerView.addItemDecoration(horizontalDivider);
+
+
 
         newsList = new ArrayList<>();
+        Log.v("init", tabSection);
 
-        // Internet
         mRequestQueue = Volley.newRequestQueue(getActivity());
 
-        // Pull refresh
-        mSwipeRefreshLayout = view.findViewById(R.id.swiperefresh_items);
+        TextView textView = view.findViewById(R.id.headlinesTab);
+        textView.setText(tabSection);
 
-        // Display view
-        recyclerView = view.findViewById(R.id.recyclerView);
-
-        // Get news
-        fetchNews();
-
-        // Pull refresh function
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                if (mRequestQueue != null) {
-                    newsList.clear();
-                    bigCardAdapter.notifyDataSetChanged();
-                    MainActivity.showLoader();
-
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            //Do something after 100ms
-                            fetchNews();
-                        }
-                    }, 2000);
-                    Log.v("refresh", "ok");
-                }
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        });
+        //fetchNews();
 
         return view;
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            if (mRequestQueue != null) {
-                newsList.clear();
-                bigCardAdapter.notifyDataSetChanged();
-                MainActivity.showLoader();
-
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Do something after 100ms
-                        fetchNews();
-                    }
-                }, 2000);
-
-                Log.v("Home refresh", "ok");
-            }
-        }
-    }
-
     private void fetchNews() {
         newsList.clear();
+        Log.v("show loader", tabSection);
+        MainActivity.showLoader();
+
+        Log.v("headlines fetchNews", tabSection);
         //String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
         String url = "http://10.0.2.2:4000/mobile";
 
@@ -121,7 +91,7 @@ public class PageHome extends Fragment {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("home fetchNews", "ok");
+                    Log.v("headlines fetched", tabSection);
                     JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject newsItem = jsonArray.getJSONObject(i);
@@ -132,6 +102,7 @@ public class PageHome extends Fragment {
                         String newsTag = newsItem.getString("tag");
                         newsList.add(new NewsCard(newsId, newsUrl, newsImageUrl, newsTitle, newsTag, "24m ago | " + newsTag, "Apr 4", getBookmarkIconById(newsId, getActivity())));
                     }
+                    Log.v("hide loader", tabSection);
                     MainActivity.hideLoader();
                     buildRecyclerView();
                 } catch (JSONException e) {
@@ -152,13 +123,9 @@ public class PageHome extends Fragment {
         recyclerView.setHasFixedSize(true); // Keep size
 
         layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
         //layoutManager = new GridLayoutManager(this, 2);
         bigCardAdapter = new BigCardAdapter(getActivity(), "Big", newsList);
-        recyclerView.setLayoutManager(layoutManager);
-        // Separator
-        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
-        horizontalDivider.setDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.line_divider));
-        recyclerView.addItemDecoration(horizontalDivider);
         recyclerView.setAdapter(bigCardAdapter);
 
         bigCardAdapter.setOnItemClickListener(new BigCardAdapter.OnItemClickListener() {
@@ -196,6 +163,7 @@ public class PageHome extends Fragment {
                 ImageButton imageButtonShare = view.findViewById(R.id.imageButton);
                 final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
                 imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), getActivity()));
+
                 final AlertDialog aLertDialog = dialogBuilder.create();
                 aLertDialog.show();
 
@@ -217,8 +185,8 @@ public class PageHome extends Fragment {
                             LocalStorage.deleteNews(newsId, getActivity());
                             newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
                             bigCardAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
 
-                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
 
                             Log.v("unbook", newsId);
                         } else {
@@ -237,7 +205,8 @@ public class PageHome extends Fragment {
                             LocalStorage.insertNews(news, getActivity());
                             newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
                             bigCardAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+
 
                             Log.v("book", newsId);
                         }
@@ -254,6 +223,7 @@ public class PageHome extends Fragment {
                         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
                         bigCardAdapter.notifyDataSetChanged();
                         Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+
 
                         // Print to log
                         JSONArray newsList = LocalStorage.getNews(getActivity());
@@ -275,6 +245,7 @@ public class PageHome extends Fragment {
                         bigCardAdapter.notifyDataSetChanged();
                         Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
 
+
                         // Print to log
                         JSONArray newsList = LocalStorage.getNews(getActivity());
                         showLocalStorageInLog(newsList);
@@ -282,21 +253,6 @@ public class PageHome extends Fragment {
                 }
             }
         });
-    }
-
-    public void insertItem(int position) {
-        //newsList.add(position, new SmallCard(R.drawable.img, "New Item At Position" + position, "This is Line 2"));
-        bigCardAdapter.notifyItemInserted(position);
-    }
-
-    public void removeItem(int position) {
-        newsList.remove(position);
-        bigCardAdapter.notifyItemRemoved(position);
-    }
-
-    public void changeItem(int position, String text) {
-        newsList.get(position).changeText1(text);
-        bigCardAdapter.notifyItemChanged(position);
     }
 
     public static int getBookmarkIconById(String id, Context context) {
@@ -322,6 +278,32 @@ public class PageHome extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void myAction() {
+        if (mRequestQueue != null) {
+            Log.v("call_test", tabSection);
+            newsList.clear();
+            if (recyclerView == null) {
+                Log.v("null recyclerView", tabSection);
+            }
+            if (bigCardAdapter != null) {
+                bigCardAdapter.notifyDataSetChanged();
+            }
+            Log.v("show loader", tabSection);
+            MainActivity.showLoader();
+
+
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //Do something after 100ms
+                    fetchNews();
+                }
+            }, 2000);
         }
     }
 }

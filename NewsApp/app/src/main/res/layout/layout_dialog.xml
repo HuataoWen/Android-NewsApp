@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/dialogImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -16,11 +16,11 @@
 
     <TextView
         android:padding="5dp"
-        android:id="@+id/textView"
+        android:id="@+id/dialogTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:text="Amazon flooded with self-published coronavirus books"
+        android:text=""
         android:textColor="@android:color/black"
         android:textSize="18sp"
         android:textStyle="bold" />

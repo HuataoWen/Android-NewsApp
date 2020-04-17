@@ -1,20 +1,22 @@
 package com.example.newsapp;
 
-public class BigCard {
+public class NewsCard {
     private String id;
     private String url;
     private String imageSource;
     private String title;
+    private String tag;
     private String dateTag;
     private String publishDate;
     private int bookmarkSrc;
 
-    public BigCard(String id, String url, String imageSource, String title, String dateTag, String publishDate, int bookmarkSrc) {
+    public NewsCard(String id, String url, String imageSource, String title, String tag, String dateTag, String publishDate, int bookmarkSrc) {
         this.id = id;
         this.url = url;
         this.imageSource = imageSource;
         this.publishDate = publishDate;
         this.title = title;
+        this.tag = tag;
         this.dateTag = dateTag;
         this.bookmarkSrc = bookmarkSrc;
     }
@@ -45,6 +47,10 @@ public class BigCard {
 
     public String getDateTag() {
         return dateTag;
+    }
+
+    public String getTag() {
+        return tag;
     }
 
     public String getPublishDate() {
