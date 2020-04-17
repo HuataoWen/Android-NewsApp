@@ -1,19 +1,25 @@
 package com.example.newsapp;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -27,28 +33,84 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.Delayed;
 
 public class PageHome extends Fragment implements ExampleDialog.ExampleDialogListener {
     private ArrayList<BigCard> newsList;
-    private RequestQueue mRequestQueue;
+    private RequestQueue mRequestQueue = null;
     private RecyclerView recyclerView;
     private BigCardAdapter bigCardAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private ProgressBar progressBar;
     ExampleDialog exampleDialog;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.page_home, container, false);
+        final View view = inflater.inflate(R.layout.page_home, container, false);
 
-        newsList=new ArrayList<>();
-        mRequestQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
+        mSwipeRefreshLayout = view.findViewById(R.id.swiperefresh_items);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        progressBar = view.findViewById(R.id.progressBar);
+
+        newsList = new ArrayList<>();
+        mRequestQueue = Volley.newRequestQueue(getActivity());
+
         parseJSOn();
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (mRequestQueue != null) {
+                    newsList.clear();
+                    bigCardAdapter.notifyDataSetChanged();
+                    MainActivity.showLoader();
+                    //progressBar.setVisibility(View.VISIBLE);
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Do something after 100ms
+                            parseJSOn();
+                        }
+                    }, 2000);
+
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    Log.v("refresh","ok");
+                }
+            }
+        });
 
         return view;
     }
 
-    private void parseJSOn() {
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            if (mRequestQueue != null) {
+                newsList.clear();
+                bigCardAdapter.notifyDataSetChanged();
+                MainActivity.showLoader();
+                //progressBar.setVisibility(View.VISIBLE);
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        parseJSOn();
+                    }
+                }, 2000);
+
+                Log.v("refresh","ok");
+            }
+        }
+    }
+
+    public void parseJSOn() {
         String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -64,6 +126,8 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
 
                         newsList.add(new BigCard(imageUrl, creatorName, creatorName));
                     }
+                    MainActivity.hideLoader();
+                    //progressBar.setVisibility(View.INVISIBLE);
                     buildRecyclerView();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -80,7 +144,6 @@ public class PageHome extends Fragment implements ExampleDialog.ExampleDialogLis
     }
 
     public void buildRecyclerView() {
-        recyclerView = getView().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true); // Keep size
 
         layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());

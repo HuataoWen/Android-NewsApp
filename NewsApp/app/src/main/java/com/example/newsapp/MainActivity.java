@@ -31,6 +31,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 //import android.widget.SearchView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -63,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int TRIGGER_AUTO_COMPLETE = 100;
     private static final long AUTO_COMPLETE_DELAY = 300;
     private String keyword;
+    private static ProgressBar progressBar;
+    private static TextView progressText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +77,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
 
         mRequestQueue = Volley.newRequestQueue(this);
+        progressBar = findViewById(R.id.progressBar);
+        progressText = findViewById(R.id.progressText);
 
         // Init view
         viewPager = findViewById(R.id.viewPager);
+
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
         // Init fragments
@@ -138,6 +145,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public static void showLoader(){
+        progressBar.setVisibility(View.VISIBLE);
+        progressText.setVisibility(View.VISIBLE);
+    }
+    public static void hideLoader(){
+        progressBar.setVisibility(View.INVISIBLE);
+        progressText.setVisibility(View.INVISIBLE);
+    }
     // Bottom navigation view adapter
     private class BottomNavigationAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments;
