@@ -148,9 +148,11 @@ public class PageBookmark extends Fragment {
                         public void onClick(View v) {
                             String newsId = newsList.get(position).getID();
                             LocalStorage.deleteNews(newsId, getActivity());
+                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+                            
                             removeItem(position);
                             aLertDialog.dismiss();
-                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+
 
                             // Print to log
                             Log.v("unbook", newsId);
@@ -165,9 +167,11 @@ public class PageBookmark extends Fragment {
                     String newsId = newsList.get(position).getID();
                     if (position != RecyclerView.NO_POSITION) {
                         String newsTitle = newsList.get(position).getTitle();
-                        LocalStorage.deleteNews(newsId, getActivity());
-                        removeItem(position);
                         Toast.makeText(getActivity(), newsTitle + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+                        removeItem(position);
+
+                        LocalStorage.deleteNews(newsId, getActivity());
+
 
                         // Print to log
                         Log.v("unbook", newsId);
