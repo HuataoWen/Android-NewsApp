@@ -35,7 +35,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/bottomNavigationView"
-        android:layout_below="@id/toolbar"></androidx.viewpager.widget.ViewPager>
+        android:layout_below="@id/toolbar">
+    </androidx.viewpager.widget.ViewPager>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"

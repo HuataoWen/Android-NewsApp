@@ -149,7 +149,7 @@ public class PageBookmark extends Fragment {
                             String newsId = newsList.get(position).getID();
                             LocalStorage.deleteNews(newsId, getActivity());
                             Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
-                            
+
                             removeItem(position);
                             aLertDialog.dismiss();
 
