@@ -119,11 +119,4 @@ public class PageTrending extends Fragment {
         return dataVals;
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            Log.v("Trending refresh", "ok");
-        }
-    }
 }

@@ -120,13 +120,4 @@ public class PageHeadlines extends Fragment {
             return tabsTitle[position];
         }
     }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            Log.v("Headlines refresh", "ok");
-            listeners.get(tabLayout.getSelectedTabPosition()).myAction();
-        }
-    }
 }

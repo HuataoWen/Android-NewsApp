@@ -14,6 +14,7 @@ import androidx.viewpager.widget.ViewPager;
 import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -54,10 +55,10 @@ import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    ViewPager viewPager;
-    BottomNavigationView bottomNavigationView;
-    List<Fragment> fragments;
-    MenuItem menuItem;
+    private ViewPager viewPager;
+    private BottomNavigationView bottomNavigationView;
+    private List<Fragment> fragments;
+    private MenuItem menuItem;
 
     public ArrayAdapter<String> newsAdapter;
     private RequestQueue mRequestQueue;
@@ -175,6 +176,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            Log.v("#PageHome -> ", "Back from search activity");
+            //fetchNews();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the search menu action bar.
         MenuInflater menuInflater = getMenuInflater();
@@ -220,9 +230,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Start new activity
-                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                alertDialog.setMessage("Search keyword is " + query);
-                alertDialog.show();
+                //AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                //alertDialog.setMessage("Search keyword is " + query);
+                //alertDialog.show();
+                Log.v("#MainActivity -> ", "Open SearchActivity");
+                Intent detailIntent = new Intent(MainActivity.this, SearchActivity.class);
+                detailIntent.putExtra("newsID", query);
+                startActivityForResult(detailIntent, 1);
                 return false;
             }
 

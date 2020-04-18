@@ -188,13 +188,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
                         String newsId = newsList.get(position).getID();
                         if (LocalStorage.isInBookmark(newsId, getActivity())) {
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
-                            LocalStorage.deleteNews(newsId, getActivity());
-                            newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
-                            bigCardAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
-
-
-                            Log.v("unbook", newsId);
+                            removeNewsFromBookmarks(newsId, position);
                         } else {
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_red_24dp);
                             JSONObject news = new JSONObject();
@@ -225,15 +219,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
                 String newsId = newsList.get(position).getID();
                 if (position != RecyclerView.NO_POSITION) {
                     if (LocalStorage.isInBookmark(newsId, getActivity())) {
-                        LocalStorage.deleteNews(newsId, getActivity());
-                        newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
-                        bigCardAdapter.notifyDataSetChanged();
-                        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
-
-
-                        // Print to log
-                        JSONArray newsList = LocalStorage.getNews(getActivity());
-                        showLocalStorageInLog(newsList);
+                        removeNewsFromBookmarks(newsId, position);
                     } else {
                         JSONObject news = new JSONObject();
                         try {
@@ -251,10 +237,6 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
                         bigCardAdapter.notifyDataSetChanged();
                         Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
 
-
-                        // Print to log
-                        JSONArray newsList = LocalStorage.getNews(getActivity());
-                        showLocalStorageInLog(newsList);
                     }
                 }
             }
@@ -269,22 +251,31 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         }
     }
 
-    private static void showLocalStorageInLog(JSONArray newsList) {
-        Log.v("info", "----------------");
-        for (int i = 0; i < newsList.length(); i++) {
-            JSONObject tmp = null;
-            try {
-                tmp = newsList.getJSONObject(i);
-                Log.v("id", tmp.getString("id"));
-                Log.v("url", tmp.getString("url"));
-                Log.v("title", tmp.getString("title"));
-                Log.v("urlToImage", tmp.getString("urlToImage"));
-                Log.v("publishDate", tmp.getString("publishDate"));
-                Log.v("tag", tmp.getString("tag"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+    private void addNewsToBookmarks(String newsId, int position) {
+        Log.v("#PageHome -> ", "Add news");
+        JSONObject news = new JSONObject();
+        try {
+            news.put("id", newsId);
+            news.put("url", newsList.get(position).getIUrl());
+            news.put("title", newsList.get(position).getTitle());
+            news.put("urlToImage", newsList.get(position).getImageResource());
+            news.put("publishDate", newsList.get(position).getPublishDate());
+            news.put("tag", newsList.get(position).getTag());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        LocalStorage.insertNews(news, getActivity());
+        newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
+        bigCardAdapter.notifyDataSetChanged();
+        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+    }
+
+    private void removeNewsFromBookmarks(String newsId, int position){
+        Log.v("#PageHome -> ", "Remove news");
+        LocalStorage.deleteNews(newsId, getActivity());
+        newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
+        bigCardAdapter.notifyDataSetChanged();
+        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 
     @Override

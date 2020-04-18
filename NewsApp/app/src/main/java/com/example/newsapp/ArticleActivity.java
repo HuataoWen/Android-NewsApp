@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -126,7 +127,7 @@ public class ArticleActivity extends AppCompatActivity {
         articleBookmark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("articleActivity -> ", "Clicked bookmark icon");
+                Log.v("#ArticleActivity -> ", "Clicked bookmark icon");
                 bookmarkClickHandle();
             }
         });
@@ -134,22 +135,20 @@ public class ArticleActivity extends AppCompatActivity {
         articleShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("articleActivity -> ", "Clicked share icon");
+                Log.v("#ArticleActivity -> ", "Clicked share icon");
                 Toast.makeText(ArticleActivity.this, "TODO:: Share article on Twitter", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     public void fetchNews() {
-
-        //String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
         String url = "http://10.0.2.2:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
-
+        Log.v("#ArticleActivity -> ", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("Article fetchNews", "ok");
+                    Log.v("#ArticleActivity -> ", "Fetched news");
                     JSONArray jsonArray = response.getJSONArray("result");
 
                     JSONObject newsItem = jsonArray.getJSONObject(0);
@@ -162,11 +161,7 @@ public class ArticleActivity extends AppCompatActivity {
                     newsDescription = newsItem.getString("description");
                     newsUrl = newsItem.getString("url");
 
-                    if (LocalStorage.isInBookmark(newsID, ArticleActivity.this)) {
-                        articleBookmark.setImageResource(R.drawable.ic_bookmark_red_24dp);
-                    } else {
-                        articleBookmark.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
-                    }
+                    articleBookmark.setImageResource(getBookmarkIconById(newsID, ArticleActivity.this));
                     articleToolBarTitle.setText(newsTitle);
                     articleContentTitle.setText(newsTitle);
                     Picasso.with(ArticleActivity.this).load(newsImageUrl).fit().centerInside().into(articleImage);
@@ -193,10 +188,12 @@ public class ArticleActivity extends AppCompatActivity {
 
     private void bookmarkClickHandle() {
         if (LocalStorage.isInBookmark(newsID, ArticleActivity.this)) {
+            Log.v("#ArticleActivity -> ", "Remove news");
             LocalStorage.deleteNews(newsID, ArticleActivity.this);
             articleBookmark.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
             Toast.makeText(ArticleActivity.this, newsTitle + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
         } else {
+            Log.v("#ArticleActivity -> ", "Add news");
             JSONObject newsObj = new JSONObject();
             try {
                 newsObj.put("id", newsID);
@@ -222,5 +219,13 @@ public class ArticleActivity extends AppCompatActivity {
     private void hideLoader() {
         progressBar.setVisibility(View.INVISIBLE);
         progressText.setVisibility(View.INVISIBLE);
+    }
+
+    private int getBookmarkIconById(String id, Context context) {
+        if (LocalStorage.isInBookmark(id, context)) {
+            return R.drawable.ic_bookmark_red_24dp;
+        } else {
+            return R.drawable.ic_bookmark_border_red_24dp;
+        }
     }
 }

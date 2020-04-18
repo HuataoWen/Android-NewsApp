@@ -120,11 +120,11 @@ public class PageBookmark extends Fragment {
 
                 // Expand dialog
                 public void onItemLongClick(final int position) {
-                    // Init dialog
-                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
                     LayoutInflater inflater = getActivity().getLayoutInflater();
                     View view = inflater.inflate(R.layout.layout_dialog, null);
-                    dialogBuilder.setView(view);
+
+                    // Init dialog
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
 
                     ImageView dialogImage = ((ImageView) view.findViewById(R.id.dialogImage));
                     Picasso.with(getActivity()).load(newsList.get(position).getImageResource()).into(dialogImage);
@@ -136,6 +136,7 @@ public class PageBookmark extends Fragment {
                     final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
                     imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), getActivity()));
 
+                    dialogBuilder.setView(view);
                     final AlertDialog aLertDialog = dialogBuilder.create();
                     aLertDialog.show();
 
@@ -220,11 +221,4 @@ public class PageBookmark extends Fragment {
         }
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            Log.v("Bookmark refresh", "ok");
-        }
-    }
 }
