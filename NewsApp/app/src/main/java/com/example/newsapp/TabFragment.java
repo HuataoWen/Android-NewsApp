@@ -2,6 +2,7 @@ package com.example.newsapp;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -35,6 +36,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import static android.app.Activity.RESULT_OK;
 
 public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
     private ArrayList<NewsCard> newsList;
@@ -119,6 +122,17 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         mRequestQueue.add(request);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode==RESULT_OK){
+            //Intent refresh = new Intent(MainActivity.this, MainActivity.class);
+            //startActivity(refresh);
+            //MainActivity.this.finish();
+            Toast.makeText(getActivity(), "Refresh", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void buildRecyclerView() {
         recyclerView.setHasFixedSize(true); // Keep size
 
@@ -131,19 +145,11 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         bigCardAdapter.setOnItemClickListener(new BigCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
-                //changeItem(position, "Clicked");
-                Toast.makeText(getActivity(), "Open article", Toast.LENGTH_SHORT).show();
-
-                /*Intent detailIntent = new Intent(MainActivity.this, ArticleActivity.class);
-                NewsCard smallCard = newsList.get(position);
-
-                detailIntent.putExtra(EXTRA_URL, smallCard.getImageResource());
-                detailIntent.putExtra(EXTRA_CREATOR, smallCard.getTitle());
-                detailIntent.putExtra(EXTRA_LIKES, smallCard.getTitle());
-
+                Log.v("TabFragment -> ", "Open article");
+                Intent detailIntent = new Intent(getActivity(), ArticleActivity.class);
+                NewsCard newsCard = newsList.get(position);
+                detailIntent.putExtra("newsID", newsCard.getID());
                 startActivityForResult(detailIntent, 1);
-                 */
-                //startActivity(detailIntent);
             }
 
             // Expand dialog
