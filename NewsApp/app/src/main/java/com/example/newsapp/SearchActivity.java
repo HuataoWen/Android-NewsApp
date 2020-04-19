@@ -112,7 +112,9 @@ public class SearchActivity extends AppCompatActivity {
         }
         loader.setVisibility(View.VISIBLE);
 
-        String url = "http://10.0.2.2:4000/mobile";
+        //String url = "http://10.0.2.2:4000/mobile/search/search?keyword=" + keyword;
+        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/search/search?keyword=" + keyword;
+
         Log.v("#SearchActivity -> ", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -122,13 +124,14 @@ public class SearchActivity extends AppCompatActivity {
                     JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject newsItem = jsonArray.getJSONObject(i);
-                        newsID = newsItem.getString("id");
-                        newsTitle = newsItem.getString("title");
-                        newsImageUrl = newsItem.getString("urlToImage");
-                        newsTag = newsItem.getString("tag");
-                        newsDate = newsItem.getString("publishDate");
-                        newsUrl = newsItem.getString("url");
-                        newsList.add(new NewsCard(newsID, newsUrl, newsImageUrl, newsTitle, newsTag, "24m ago | " + newsTag, "Apr 4", getBookmarkIconById(newsID, SearchActivity.this)));
+                        newsID = newsItem.getString("newsId");
+                        newsTitle = newsItem.getString("newsTitle");
+                        newsImageUrl = newsItem.getString("newsImageUrl");
+                        newsTag = newsItem.getString("newsTag");
+                        newsDate = newsItem.getString("newsPubDate");
+                        newsUrl = newsItem.getString("newsUrl");
+                        String timeDiff = MyUtil.GetTimeDifference(newsDate);
+                        newsList.add(new NewsCard(newsID, newsUrl, newsImageUrl, newsTitle, newsTag, timeDiff + " ago | " + newsTag, "Apr 4", getBookmarkIconById(newsID, SearchActivity.this)));
                     }
                     loader.setVisibility(View.INVISIBLE);
                     buildRecyclerView();

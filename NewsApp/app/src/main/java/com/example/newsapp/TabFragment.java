@@ -54,6 +54,8 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         this.tabSection = tabSection;
     }
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -67,7 +69,6 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         recyclerView.addItemDecoration(horizontalDivider);
 
 
-
         newsList = new ArrayList<>();
         Log.v("init", tabSection);
 
@@ -76,9 +77,21 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         TextView textView = view.findViewById(R.id.headlinesTab);
         textView.setText(tabSection);
 
-        //fetchNews();
+        //if (tabSection == "World") fetchNews();
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        Log.e("start","start");
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e("resume","resume");
     }
 
     private void fetchNews() {
@@ -88,7 +101,9 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
 
         Log.v("headlines fetchNews", tabSection);
         //String url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true";
-        String url = "http://10.0.2.2:4000/mobile";
+        //String url = "http://10.0.2.2:4000/mobile/" + tabSection.toLowerCase();
+        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/" + tabSection.toLowerCase();
+
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -98,12 +113,14 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
                     JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject newsItem = jsonArray.getJSONObject(i);
-                        String newsId = newsItem.getString("id");
-                        String newsUrl = newsItem.getString("url");
-                        String newsTitle = newsItem.getString("title");
-                        String newsImageUrl = newsItem.getString("urlToImage");
-                        String newsTag = newsItem.getString("tag");
-                        newsList.add(new NewsCard(newsId, newsUrl, newsImageUrl, newsTitle, newsTag, "24m ago | " + newsTag, "Apr 4", getBookmarkIconById(newsId, getActivity())));
+                        String newsId = newsItem.getString("newsId");
+                        String newsUrl = newsItem.getString("newsUrl");
+                        String newsTitle = newsItem.getString("newsTitle");
+                        String newsImageUrl = newsItem.getString("newsImageUrl");
+                        String newsTag = newsItem.getString("newsTag");
+                        String newsTime = newsItem.getString("newsTime");
+                        String timeDiff = MyUtil.GetTimeDifference(newsTime);
+                        newsList.add(new NewsCard(newsId, newsUrl, newsImageUrl, newsTitle, newsTag, timeDiff + " ago | " + newsTag, "Apr 4", getBookmarkIconById(newsId, getActivity())));
                     }
                     Log.v("hide loader", tabSection);
                     MainActivity.hideLoader();
@@ -123,9 +140,9 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode==RESULT_OK){
+        if (resultCode == RESULT_OK) {
             //Intent refresh = new Intent(MainActivity.this, MainActivity.class);
             //startActivity(refresh);
             //MainActivity.this.finish();
@@ -270,7 +287,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
         Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
-    private void removeNewsFromBookmarks(String newsId, int position){
+    private void removeNewsFromBookmarks(String newsId, int position) {
         Log.v("#PageHome -> ", "Remove news");
         LocalStorage.deleteNews(newsId, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
@@ -280,6 +297,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
 
     @Override
     public void myAction() {
+        Log.v("call***", "myAction");
         if (mRequestQueue != null) {
             Log.v("call_test", tabSection);
             newsList.clear();
@@ -292,15 +310,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
             Log.v("show loader", tabSection);
             MainActivity.showLoader();
 
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //Do something after 100ms
-                    fetchNews();
-                }
-            }, 2000);
+            fetchNews();
         }
     }
 }

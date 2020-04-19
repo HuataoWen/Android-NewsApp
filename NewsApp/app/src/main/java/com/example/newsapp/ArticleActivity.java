@@ -142,7 +142,9 @@ public class ArticleActivity extends AppCompatActivity {
     }
 
     public void fetchNews() {
-        String url = "http://10.0.2.2:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
+        //String url = "http://10.0.2.2:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
+        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/getArticle?article_id=" + newsID + "&source=true";
+
         Log.v("#ArticleActivity -> ", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -153,13 +155,13 @@ public class ArticleActivity extends AppCompatActivity {
 
                     JSONObject newsItem = jsonArray.getJSONObject(0);
 
-                    newsID = newsItem.getString("id");
-                    newsTitle = newsItem.getString("title");
-                    newsImageUrl = newsItem.getString("urlToImg");
-                    newsTag = newsItem.getString("tag");
-                    newsDate = newsItem.getString("date");
-                    newsDescription = newsItem.getString("description");
-                    newsUrl = newsItem.getString("url");
+                    newsID = newsItem.getString("newsID");
+                    newsTitle = newsItem.getString("newsTitle");
+                    newsImageUrl = newsItem.getString("newsImageUrl");
+                    newsTag = newsItem.getString("newsTag");
+                    newsDate = newsItem.getString("newsDate");
+                    newsDescription = newsItem.getString("newsDescription");
+                    newsUrl = newsItem.getString("newsUrl");
 
                     articleBookmark.setImageResource(getBookmarkIconById(newsID, ArticleActivity.this));
                     articleToolBarTitle.setText(newsTitle);

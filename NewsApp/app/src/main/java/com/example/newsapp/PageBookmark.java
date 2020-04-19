@@ -193,6 +193,7 @@ public class PageBookmark extends Fragment {
     public void removeItem(int position) {
         newsList.remove(position);
         bigCardAdapter.notifyItemRemoved(position);
+        if (newsList.size() == 0) bookmarkEmptyTextView.setVisibility(View.VISIBLE);
     }
 
     public static int getBookmarkIconById(String id, Context context) {

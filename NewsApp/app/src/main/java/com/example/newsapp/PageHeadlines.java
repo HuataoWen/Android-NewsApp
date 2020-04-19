@@ -26,7 +26,7 @@ public class PageHeadlines extends Fragment {
     SwipeRefreshLayout mSwipeRefreshLayout = null;
 
 
-    String[] tabsTitle = {"World", "Business", "Politics"};
+    String[] tabsTitle = {"World", "Business", "Politics", "Sports", "Technology", "Science"};
     ArrayList<Fragment> fragments;
     ArrayList<MyInterface> listeners = new ArrayList<>();
 
@@ -47,13 +47,19 @@ public class PageHeadlines extends Fragment {
 
         final FragmentPagerAdapter tabadapter = new myAdapter(getChildFragmentManager(), fragments);
         viewPager.setAdapter(tabadapter);
+
         tabLayout.setupWithViewPager(viewPager);
 
         listeners.get(0).myAction();
 
+
+
+
+
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                Log.v("tabListener","ddddddddddddddddddddd");
                 listeners.get(tabLayout.getSelectedTabPosition()).myAction();
             }
 
@@ -79,20 +85,42 @@ public class PageHeadlines extends Fragment {
         return view;
     }
 
+    /*@Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        Boolean isVisible = isVisibleToUser;
+        if (isVisible) {
+            listeners.get(0).myAction();
+        }
+    }
+
+     */
+
     private void initFragment() {
         fragments = new ArrayList<Fragment>();
+        //"Sports", "Technology", "Science"
 
         TabFragment fragment1 = new TabFragment("World");
         TabFragment fragment2 = new TabFragment("Business");
         TabFragment fragment3 = new TabFragment("Politics");
+        TabFragment fragment4 = new TabFragment("Sports");
+        TabFragment fragment5 = new TabFragment("Technology");
+        TabFragment fragment6 = new TabFragment("Science");
+
 
         listeners.add((MyInterface) fragment1);
         listeners.add((MyInterface) fragment2);
         listeners.add((MyInterface) fragment3);
+        listeners.add((MyInterface) fragment4);
+        listeners.add((MyInterface) fragment5);
+        listeners.add((MyInterface) fragment6);
 
         fragments.add(fragment1);
         fragments.add(fragment2);
         fragments.add(fragment3);
+        fragments.add(fragment4);
+        fragments.add(fragment5);
+        fragments.add(fragment6);
     }
 
     private class myAdapter extends FragmentPagerAdapter {
