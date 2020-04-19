@@ -91,7 +91,7 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e("resume","resume");
+        Log.v("PageHeadlines","==============================================");
     }
 
     private void fetchNews() {

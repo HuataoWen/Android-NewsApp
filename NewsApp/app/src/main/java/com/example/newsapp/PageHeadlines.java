@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -45,8 +46,8 @@ public class PageHeadlines extends Fragment {
 
         initFragment();
 
-        final FragmentPagerAdapter tabadapter = new myAdapter(getChildFragmentManager(), fragments);
-        viewPager.setAdapter(tabadapter);
+        final FragmentPagerAdapter tabAdapter = new myAdapter(getChildFragmentManager(), fragments);
+        viewPager.setAdapter(tabAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
 
@@ -96,6 +97,15 @@ public class PageHeadlines extends Fragment {
 
      */
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        listeners.get(tabLayout.getSelectedTabPosition()).myAction();
+        Log.v("PageHeadlines","***********************************************************");
+    }
+
+
     private void initFragment() {
         fragments = new ArrayList<Fragment>();
         //"Sports", "Technology", "Science"
@@ -127,7 +137,7 @@ public class PageHeadlines extends Fragment {
         private List<Fragment> list;
 
         public myAdapter(@NonNull FragmentManager fm, List<Fragment> list) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
             this.list = list;
         }
 

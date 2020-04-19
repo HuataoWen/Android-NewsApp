@@ -154,8 +154,29 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
         progressText.setVisibility(View.INVISIBLE);
     }
+
+
+    private class BottomNavigationAdapter extends FragmentPagerAdapter{
+        private List<Fragment> fragments;
+
+        public BottomNavigationAdapter(@NonNull FragmentManager fm, List<Fragment> fragments) {
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            this.fragments = fragments;
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
+    }
     // Bottom navigation view adapter
-    private class BottomNavigationAdapter extends FragmentPagerAdapter {
+    /*private class BottomNavigationAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments;
 
         public BottomNavigationAdapter(@NonNull FragmentManager fm, List<Fragment> fragments) {
@@ -174,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
             return fragments.size();
         }
     }
+     */
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
