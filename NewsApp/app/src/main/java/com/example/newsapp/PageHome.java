@@ -10,6 +10,7 @@ import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -318,7 +319,6 @@ public class PageHome extends Fragment {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
                 LayoutInflater inflater = getActivity().getLayoutInflater();
                 View view = inflater.inflate(R.layout.layout_dialog, null);
-                dialogBuilder.setView(view);
 
                 ImageView dialogImage = ((ImageView) view.findViewById(R.id.dialogImage));
                 Picasso.with(getActivity()).load(newsList.get(position).getImageResource()).into(dialogImage);
@@ -329,6 +329,8 @@ public class PageHome extends Fragment {
                 ImageButton imageButtonShare = view.findViewById(R.id.imageButton);
                 final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
                 imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), getActivity()));
+
+                dialogBuilder.setView(view);
                 final AlertDialog aLertDialog = dialogBuilder.create();
                 aLertDialog.show();
 
@@ -337,7 +339,10 @@ public class PageHome extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Log.v("#PageHome -> ", "Clicked share icon");
-                        Toast.makeText(getActivity(), "TODO:: Share article on Twitter", Toast.LENGTH_SHORT).show();
+                        String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getIUrl() + "&hashtags=CSCI571NewsSearch";
+                        Uri uri = Uri.parse(url);
+                        Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent1);
                     }
                 });
 

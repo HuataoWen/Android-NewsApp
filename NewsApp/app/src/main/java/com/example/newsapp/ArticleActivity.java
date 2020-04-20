@@ -136,14 +136,17 @@ public class ArticleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.v("#ArticleActivity -> ", "Clicked share icon");
-                Toast.makeText(ArticleActivity.this, "TODO:: Share article on Twitter", Toast.LENGTH_SHORT).show();
+                String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url="+newsUrl+"&hashtags=CSCI571NewsSearch";
+                Uri uri = Uri.parse(url);
+                Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent1);
             }
         });
     }
 
     public void fetchNews() {
         //String url = "http://10.0.2.2:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/getArticle?article_id=" + newsID + "&source=true";
+        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
 
         Log.v("#ArticleActivity -> ", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {

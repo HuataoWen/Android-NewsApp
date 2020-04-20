@@ -54,16 +54,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ScrollView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/articleToolbar">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </ScrollView>
+            android:layout_height="match_parent" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

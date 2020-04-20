@@ -1,5 +1,7 @@
 package com.example.newsapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONArray;

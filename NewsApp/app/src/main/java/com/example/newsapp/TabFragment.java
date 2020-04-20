@@ -3,6 +3,7 @@ package com.example.newsapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -55,7 +56,6 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
     }
 
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -84,14 +84,14 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
 
     @Override
     public void onStart() {
-        Log.e("start","start");
+        Log.e("start", "start");
         super.onStart();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.v("PageHeadlines","==============================================");
+        Log.v("PageHeadlines", "==============================================");
     }
 
     private void fetchNews() {
@@ -194,7 +194,10 @@ public class TabFragment extends Fragment implements PageHeadlines.MyInterface {
                 imageButtonShare.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getActivity(), "Share", Toast.LENGTH_SHORT).show();
+                        String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getIUrl() + "&hashtags=CSCI571NewsSearch";
+                        Uri uri = Uri.parse(url);
+                        Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent1);
                     }
                 });
 

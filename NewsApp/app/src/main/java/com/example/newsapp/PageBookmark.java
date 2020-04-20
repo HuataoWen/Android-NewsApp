@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -145,7 +146,10 @@ public class PageBookmark extends Fragment {
                     imageButtonShare.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(getActivity(), "Share", Toast.LENGTH_SHORT).show();
+                            String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getIUrl() + "&hashtags=CSCI571NewsSearch";
+                            Uri uri = Uri.parse(url);
+                            Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
+                            startActivity(intent1);
                         }
                     });
 
