@@ -64,27 +64,12 @@ public class PageTrending extends Fragment {
         l.setTextSize(18);
         l.setFormSize(18);
 
-        int colorValue = Color.parseColor("#502ca6");
-        lineDataSet1 = new LineDataSet(dataValues1(), "Trending Chart for CoronaVirus");
-        lineDataSet1.setColor(colorValue);
-        lineDataSet1.setCircleColor(colorValue);
-        lineDataSet1.setFillColor(colorValue);
-        lineDataSet1.setValueTextSize(10);
-        lineDataSet1.setCircleHoleColor(colorValue);
-
-        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-        dataSets.add(lineDataSet1);
-
-        LineData data = new LineData(dataSets);
-        lineChart.setData(data);
-
-        lineChart.invalidate();
 
         trendingEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    fetchNews();
+                    fetchNews(trendingEditText.getText().toString());
                 }
                 return false;
             }
@@ -93,10 +78,11 @@ public class PageTrending extends Fragment {
         return view;
     }
 
-    public void fetchNews() {
+    public void fetchNews(String searchWord) {
+        final String word = searchWord;
         Log.v("#PageTrending -> ", "Start fetch word trending");
         //String url = "http://10.0.2.2:4000/mobile/getTrending?keyword=" + trendingEditText.getText().toString();
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/getTrending?keyword=" + trendingEditText.getText().toString();
+        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/getTrending?keyword=" + word;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -109,15 +95,15 @@ public class PageTrending extends Fragment {
                         dataVals.add(new Entry(i, jsonArray.getInt(i)));
                     }
 
-                    List<LegendEntry> entries = new ArrayList<>();
-                    LegendEntry entry = new LegendEntry();
-                    entry.formColor = Color.parseColor("#502ca6");
-                    entry.label = "Trending Chart for " + trendingEditText.getText().toString();
-                    entries.add(entry);
-                    l.setCustom(entries);
+                    //List<LegendEntry> entries = new ArrayList<>();
+                    //LegendEntry entry = new LegendEntry();
+                    //entry.formColor = Color.parseColor("#502ca6");
+                    //entry.label = "Trending Chart for " + word;
+                    //entries.add(entry);
+                    //l.setCustom(entries);
 
                     int colorValue = Color.parseColor("#502ca6");
-                    lineDataSet1 = new LineDataSet(dataVals, "Trending Chart for " + trendingEditText.getText().toString());
+                    lineDataSet1 = new LineDataSet(dataVals, "Trending Chart for " + word);
                     lineDataSet1.setColor(colorValue);
                     lineDataSet1.setCircleColor(colorValue);
                     lineDataSet1.setFillColor(colorValue);
@@ -130,7 +116,7 @@ public class PageTrending extends Fragment {
                     lineChart.setData(data);
                     lineChart.invalidate();
 
-                    Log.v("#ArticleActivity -> ", "Updated");
+                    Log.v("#PageTrending -> ", "Updated");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -145,13 +131,16 @@ public class PageTrending extends Fragment {
         mRequestQueue.add(request);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        fetchNews("CoronaVirus");
+        Log.v("#PageTrending -> ", "onResume");
+
+    }
+
     private ArrayList<Entry> dataValues1() {
         ArrayList<Entry> dataVals = new ArrayList<Entry>();
-        dataVals.add(new Entry(0, 20));
-        dataVals.add(new Entry(1, 24));
-        dataVals.add(new Entry(2, 2));
-        dataVals.add(new Entry(3, 400));
-        dataVals.add(new Entry(4, 208));
 
         return dataVals;
     }
