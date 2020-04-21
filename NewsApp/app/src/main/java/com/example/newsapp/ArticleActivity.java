@@ -3,6 +3,7 @@ package com.example.newsapp;
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.text.HtmlCompat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -47,16 +48,15 @@ public class ArticleActivity extends AppCompatActivity {
     private TextView articleDate;
     private TextView articleDescription;
     private TextView articleUrl;
-    private RequestQueue mRequestQueue = null;
-
+    private RequestQueue requestQueue = null;
     private static ProgressBar progressBar;
     private static TextView progressText;
 
-    String newsID;
+    String newsId;
     String newsTitle;
     String newsImageUrl;
     String newsTag;
-    String newsDate;
+    String newsPubDate;
     String newsDescription;
     String newsUrl;
 
@@ -65,19 +65,32 @@ public class ArticleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article);
 
+        // Init
+        Log.v("#ArticleActivity -> ", "Start onCreate");
+
+        // Obtain intent
         Intent intent = getIntent();
-        newsID = intent.getStringExtra("newsID");
+        newsId = intent.getStringExtra("newsId");
+        Log.v("#ArticleActivity -> ", "Get intent newsId: " + newsId);
+        requestQueue = Volley.newRequestQueue(ArticleActivity.this);
+        initView();
+        createClickSpan();
+        getArticle();
+        setClickListener();
 
+        Log.v("#ArticleActivity -> ", "End onCreate");
+    }
+
+    private void initView() {
+        Log.v("#ArticleActivity -> ", "Init view");
         toolbar = findViewById(R.id.articleToolbar);
-
+        articleBookmark = findViewById(R.id.articleBookmark);
+        articleShare = findViewById(R.id.articleShare);
         articleCard = findViewById(R.id.articleCard);
         articleCard.setVisibility(View.INVISIBLE);
         progressBar = findViewById(R.id.progressBar);
         progressText = findViewById(R.id.progressText);
         showLoader();
-
-        articleBookmark = findViewById(R.id.articleBookmark);
-        articleShare = findViewById(R.id.articleShare);
         articleToolBarTitle = findViewById(R.id.articleToolBarTitle);
         articleContentTitle = findViewById(R.id.articleContentTitle);
         articleImage = findViewById(R.id.articleImage);
@@ -85,12 +98,12 @@ public class ArticleActivity extends AppCompatActivity {
         articleDate = findViewById(R.id.articleDate);
         articleDescription = findViewById(R.id.articleDescription);
         articleUrl = findViewById(R.id.articleUrl);
+    }
 
+    private void createClickSpan() {
+        Log.v("#ArticleActivity -> ", "Create clickSpan");
         String text = "View Full Article";
-        mRequestQueue = Volley.newRequestQueue(ArticleActivity.this);
-
         SpannableString spannableString = new SpannableString(text);
-
         ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
@@ -108,11 +121,13 @@ public class ArticleActivity extends AppCompatActivity {
                 ds.setUnderlineText(true);
             }
         };
-
         spannableString.setSpan(clickableSpan, 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
         articleUrl.setText(spannableString);
         articleUrl.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    private void setClickListener() {
+        Log.v("#ArticleActivity -> ", "Set clickListener");
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,8 +136,6 @@ public class ArticleActivity extends AppCompatActivity {
                 finish();
             }
         });
-
-        fetchNews();
 
         articleBookmark.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,46 +149,41 @@ public class ArticleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.v("#ArticleActivity -> ", "Clicked share icon");
-                String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url="+newsUrl+"&hashtags=CSCI571NewsSearch";
-                Uri uri = Uri.parse(url);
-                Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent1);
+                Intent intent = MyUtil.getShareIntent(newsUrl);
+                startActivity(intent);
             }
         });
     }
 
-    public void fetchNews() {
-        //String url = "http://10.0.2.2:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/getArticle?article_id=" + newsID + "&source=true";
-
+    private void getArticle() {
         Log.v("#ArticleActivity -> ", "Start fetch news");
+        String url = MyUtil.getBackendUrl() + "getArticle?article_id=" + newsId + "&source=true";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
                     Log.v("#ArticleActivity -> ", "Fetched news");
                     JSONArray jsonArray = response.getJSONArray("result");
-
                     JSONObject newsItem = jsonArray.getJSONObject(0);
-
-                    newsID = newsItem.getString("newsID");
+                    newsId = newsItem.getString("newsId");
                     newsTitle = newsItem.getString("newsTitle");
                     newsImageUrl = newsItem.getString("newsImageUrl");
                     newsTag = newsItem.getString("newsTag");
-                    newsDate = newsItem.getString("newsDate");
+                    newsPubDate = newsItem.getString("newsPubDate");
                     newsDescription = newsItem.getString("newsDescription");
                     newsUrl = newsItem.getString("newsUrl");
 
-                    articleBookmark.setImageResource(getBookmarkIconById(newsID, ArticleActivity.this));
                     articleToolBarTitle.setText(newsTitle);
                     articleContentTitle.setText(newsTitle);
+                    articleBookmark.setImageResource(getBookmarkIconById(newsId, ArticleActivity.this));
                     Picasso.with(ArticleActivity.this).load(newsImageUrl).fit().centerInside().into(articleImage);
                     articleTag.setText(newsTag);
-                    articleDate.setText(newsDate);
-                    articleDescription.setText(Html.fromHtml(newsDescription).toString());
+                    articleDate.setText(MyUtil.getPubDate(newsPubDate));
+                    articleDescription.setText(HtmlCompat.fromHtml(newsDescription, HtmlCompat.FROM_HTML_MODE_LEGACY));
 
                     hideLoader();
                     articleCard.setVisibility(View.VISIBLE);
+                    Log.v("#ArticleActivity -> ", "Updated view");
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -188,25 +196,25 @@ public class ArticleActivity extends AppCompatActivity {
             }
         });
 
-        mRequestQueue.add(request);
+        requestQueue.add(request);
     }
 
     private void bookmarkClickHandle() {
-        if (LocalStorage.isInBookmark(newsID, ArticleActivity.this)) {
+        if (LocalStorage.isInBookmark(newsId, ArticleActivity.this)) {
             Log.v("#ArticleActivity -> ", "Remove news");
-            LocalStorage.deleteNews(newsID, ArticleActivity.this);
+            LocalStorage.deleteNews(newsId, ArticleActivity.this);
             articleBookmark.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
             Toast.makeText(ArticleActivity.this, newsTitle + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
         } else {
             Log.v("#ArticleActivity -> ", "Add news");
             JSONObject newsObj = new JSONObject();
             try {
-                newsObj.put("id", newsID);
-                newsObj.put("url", newsUrl);
-                newsObj.put("title", newsTitle);
-                newsObj.put("urlToImage", newsImageUrl);
-                newsObj.put("publishDate", newsDate);
-                newsObj.put("tag", newsTag);
+                newsObj.put("newsId", newsId);
+                newsObj.put("newsUrl", newsUrl);
+                newsObj.put("newsTitle", newsTitle);
+                newsObj.put("newsImageUrl", newsImageUrl);
+                newsObj.put("newsPubDate", newsPubDate);
+                newsObj.put("newsTag", newsTag);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

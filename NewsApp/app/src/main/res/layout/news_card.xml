@@ -25,22 +25,15 @@
             android:scaleType="fitXY"
             app:srcCompat="@mipmap/ic_launcher" />
 
-        <TextView
-            android:id="@+id/bigCardTitleView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:id="@+id/bigCardBookmarkView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@+id/bigCardTitleView"
             android:layout_alignTop="@id/bigCardImageView"
+            android:layout_alignParentRight="true"
             android:layout_margin="4dp"
-            android:layout_toLeftOf="@id/bigCardBookmarkView"
-            android:layout_toRightOf="@id/bigCardImageView"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:minLines="3"
-            android:scrollHorizontally="true"
-            android:text="Line 1"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            app:srcCompat="@drawable/ic_bookmark_border_red_24dp" />
 
         <TextView
             android:id="@+id/bigCardDateTagView"
@@ -53,15 +46,20 @@
             android:textColor="@android:color/darker_gray"
             android:textSize="15sp" />
 
-        <ImageView
-            android:id="@+id/bigCardBookmarkView"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_below="@+id/bigCardTitleView"
+        <TextView
+            android:id="@+id/bigCardTitleView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignTop="@id/bigCardImageView"
-            android:layout_alignParentRight="true"
             android:layout_margin="4dp"
-            app:srcCompat="@drawable/ic_bookmark_border_red_24dp" />
+            android:layout_toLeftOf="@id/bigCardBookmarkView"
+            android:layout_toRightOf="@id/bigCardImageView"
+
+            android:scrollHorizontally="true"
+            android:text="Line 1"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
     </RelativeLayout>
 

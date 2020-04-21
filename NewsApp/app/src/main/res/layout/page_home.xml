@@ -16,12 +16,14 @@
             android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/homeView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
+                    android:id="@+id/weatherCard"
                     android:layout_height="400px"
                     android:layout_margin="7dp"
                     app:cardCornerRadius="10dp"

@@ -1,6 +1,7 @@
 package com.example.newsapp;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +15,13 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleViewHolder> {
+public class NewsCardAdapter extends RecyclerView.Adapter<NewsCardAdapter.ExampleViewHolder> {
     private static Context mContext;
     private ArrayList<NewsCard> newsList;
     private OnItemClickListener onItemClickListener;
     private String cardType;
 
-    public BigCardAdapter(Context context, String cardType, ArrayList<NewsCard> exampleList) {
+    public NewsCardAdapter(Context context, String cardType, ArrayList<NewsCard> exampleList) {
         this.cardType = cardType;
         mContext = context;
         newsList = exampleList;
@@ -48,6 +49,8 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
             super(itemView);
             bigCardImageView = itemView.findViewById(R.id.bigCardImageView);
             bigCardTitleView = itemView.findViewById(R.id.bigCardTitleView);
+            bigCardTitleView.setMaxLines(3);
+            bigCardTitleView.setEllipsize(TextUtils.TruncateAt.END);
             bigCardDateTagView = itemView.findViewById(R.id.bigCardDateTagView);
             bigCardBookmarkView = itemView.findViewById(R.id.bigCardBookmarkView);
 
@@ -92,7 +95,7 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
     @NonNull
     @Override
     public ExampleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.big_card, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_card, parent, false);
 
         if (cardType.equals("Small")) {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.small_card, parent, false);
@@ -106,15 +109,15 @@ public class BigCardAdapter extends RecyclerView.Adapter<BigCardAdapter.ExampleV
     public void onBindViewHolder(@NonNull ExampleViewHolder holder, int position) {
         NewsCard currentItem = newsList.get(position);
 
-        String imageUrl = currentItem.getImageResource();
-        String newsTitle = currentItem.getTitle();
-        String newsDateTag = currentItem.getDateTag();
-        int newsBookmark = currentItem.getBookmark();
+        String newsImageUrl = currentItem.getNewsImageUrl();
+        String newsTitle = currentItem.getNewsTitle();
+        String newsPubDate = currentItem.getNewsPubDateTag();
+        int newsBookmarkSrc = currentItem.getNewsBookmarkSrc();
 
-        Picasso.with(mContext).load(imageUrl).fit().centerInside().into(holder.bigCardImageView);
+        Picasso.with(mContext).load(newsImageUrl).fit().centerInside().into(holder.bigCardImageView);
         holder.bigCardTitleView.setText(newsTitle);
-        holder.bigCardDateTagView.setText(newsDateTag);
-        holder.bigCardBookmarkView.setImageResource(newsBookmark);
+        holder.bigCardDateTagView.setText(newsPubDate);
+        holder.bigCardBookmarkView.setImageResource(newsBookmarkSrc);
     }
 
     @Override

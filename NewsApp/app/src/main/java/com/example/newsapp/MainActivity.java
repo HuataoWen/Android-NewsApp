@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.Context;
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private static ProgressBar progressBar;
     private static TextView progressText;
 
+    private MyInterface listener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,11 +91,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Init fragments
         fragments = new ArrayList<>();
-        fragments.add(new PageHome());
+        Fragment fragment = new PageHome();
+        listener = (MyInterface) fragment;
+        fragments.add(fragment);
         fragments.add(new PageHeadlines());
         fragments.add(new PageTrending());
         fragments.add(new PageBookmark());
-
         // New adapter for navigation
         BottomNavigationAdapter bottomNavigationAdapter = new BottomNavigationAdapter(getSupportFragmentManager(), fragments);
         viewPager.setAdapter(bottomNavigationAdapter);
@@ -146,17 +150,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public static void showLoader(){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.v("#MainActivity -> ", "Back from search activity");
+        if (resultCode == RESULT_OK) {
+            //isNeedUpdateBookmark = true;
+            listener.requireUpdateBookmark();
+        }
+    }
+
+    public interface MyInterface {
+        void requireUpdateBookmark();
+    }
+
+    public static void showLoader() {
         progressBar.setVisibility(View.VISIBLE);
         progressText.setVisibility(View.VISIBLE);
     }
-    public static void hideLoader(){
+
+    public static void hideLoader() {
         progressBar.setVisibility(View.INVISIBLE);
         progressText.setVisibility(View.INVISIBLE);
     }
 
 
-    private class BottomNavigationAdapter extends FragmentPagerAdapter{
+    private class BottomNavigationAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments;
 
         public BottomNavigationAdapter(@NonNull FragmentManager fm, List<Fragment> fragments) {
@@ -175,37 +193,8 @@ public class MainActivity extends AppCompatActivity {
             return fragments.size();
         }
     }
-    // Bottom navigation view adapter
-    /*private class BottomNavigationAdapter extends FragmentPagerAdapter {
-        private List<Fragment> fragments;
 
-        public BottomNavigationAdapter(@NonNull FragmentManager fm, List<Fragment> fragments) {
-            super(fm);
-            this.fragments = fragments;
-        }
-
-        @NonNull
-        @Override
-        public Fragment getItem(int position) {
-            return fragments.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return fragments.size();
-        }
-    }
-     */
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            Log.v("#PageHome -> ", "Back from search activity");
-            //fetchNews();
-        }
-    }
-
+    @SuppressLint("RestrictedApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the search menu action bar.
@@ -233,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int itemIndex, long id) {
                 String queryString = (String) adapterView.getItemAtPosition(itemIndex);
                 searchAutoComplete.setText("" + queryString);
-                Toast.makeText(MainActivity.this, "you clicked " + queryString, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -251,15 +239,11 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // Start new activity
-                //AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                //alertDialog.setMessage("Search keyword is " + query);
-                //alertDialog.show();
                 Log.v("#MainActivity -> ", "Open SearchActivity");
                 Intent detailIntent = new Intent(MainActivity.this, SearchActivity.class);
-                detailIntent.putExtra("newsID", query);
+                detailIntent.putExtra("keyword", query);
                 startActivityForResult(detailIntent, 1);
-                return false;
+                return true;
             }
 
             @Override
@@ -277,12 +261,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateSuggestions() {
+        Log.v("#MainActivity -> ", "Fetch suggestions for " + keyword);
         String url = "https://xiaobudai.cognitiveservices.azure.com/bing/v7.0/suggestions?mkt=en-US&q=" + keyword;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
+                    Log.v("#MainActivity -> ", "Fetched suggestions");
                     JSONArray jsonArray = response.getJSONArray("suggestionGroups")
                             .getJSONObject(0)
                             .getJSONArray("searchSuggestions");

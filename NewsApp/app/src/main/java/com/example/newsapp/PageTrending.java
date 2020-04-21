@@ -41,82 +41,86 @@ import java.util.List;
 import java.util.Map;
 
 public class PageTrending extends Fragment {
-    LineChart lineChart;
-    Legend l;
-    EditText trendingEditText;
-    LineDataSet lineDataSet1;
-    private RequestQueue mRequestQueue = null;
+    private LineChart lineChart;
+    private Legend legend;
+    private EditText trendingEditText;
+    private LineDataSet lineDataSet;
+    private RequestQueue requestQueue = null;
+    private String searchWord;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.page_trending, container, false);
 
-        mRequestQueue = Volley.newRequestQueue(getActivity());
+        Log.v("#PageTrending -> ", "Start onCreate");
+        requestQueue = Volley.newRequestQueue(getActivity());
         trendingEditText = view.findViewById(R.id.trendingEditText);
+
+        searchWord = "CoronaVirus"; // Search word init as CoronaVirus
 
         lineChart = view.findViewById(R.id.line_chart);
         lineChart.getAxisRight().setDrawGridLines(false);
         lineChart.getAxisLeft().setDrawGridLines(false);
         lineChart.getXAxis().setDrawGridLines(false);
-        lineChart.setMinimumHeight(1500);
-        l = lineChart.getLegend();
-        l.setTextSize(18);
-        l.setFormSize(18);
+        lineChart.setMinimumHeight(500);
+        legend = lineChart.getLegend();
+        legend.setTextSize(18);
+        legend.setFormSize(18);
 
 
         trendingEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    fetchNews(trendingEditText.getText().toString());
+                    searchWord = trendingEditText.getText().toString();
+                    fetchTrending();
                 }
                 return false;
             }
         });
+        Log.v("#PageTrending -> ", "End onCreate");
+
 
         return view;
     }
 
-    public void fetchNews(String searchWord) {
-        final String word = searchWord;
-        Log.v("#PageTrending -> ", "Start fetch word trending");
-        //String url = "http://10.0.2.2:4000/mobile/getTrending?keyword=" + trendingEditText.getText().toString();
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/getTrending?keyword=" + word;
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("#PageTrending -> ", "onResume");
+        fetchTrending();
+    }
+
+    public void fetchTrending() {
+        Log.v("#PageTrending -> ", "Start fetch " + searchWord + " trending");
+        String url = MyUtil.getBackendUrl() + "getTrending?keyword=" + searchWord;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("#ArticleActivity -> ", "Fetched news");
+                    Log.v("#PageTrending -> ", "Fetched trending");
                     JSONArray jsonArray = response.getJSONArray("result");
-                    ArrayList<Entry> dataVals = new ArrayList<Entry>();
+                    ArrayList<Entry> dataValues = new ArrayList<Entry>();
                     for (int i = 0; i < jsonArray.length(); i++) {
-                        dataVals.add(new Entry(i, jsonArray.getInt(i)));
+                        dataValues.add(new Entry(i, jsonArray.getInt(i)));
                     }
 
-                    //List<LegendEntry> entries = new ArrayList<>();
-                    //LegendEntry entry = new LegendEntry();
-                    //entry.formColor = Color.parseColor("#502ca6");
-                    //entry.label = "Trending Chart for " + word;
-                    //entries.add(entry);
-                    //l.setCustom(entries);
-
                     int colorValue = Color.parseColor("#502ca6");
-                    lineDataSet1 = new LineDataSet(dataVals, "Trending Chart for " + word);
-                    lineDataSet1.setColor(colorValue);
-                    lineDataSet1.setCircleColor(colorValue);
-                    lineDataSet1.setFillColor(colorValue);
-                    lineDataSet1.setValueTextSize(10);
-                    lineDataSet1.setCircleHoleColor(colorValue);
+                    lineDataSet = new LineDataSet(dataValues, "Trending Chart for " + searchWord);
+                    lineDataSet.setColor(colorValue);
+                    lineDataSet.setCircleColor(colorValue);
+                    lineDataSet.setFillColor(colorValue);
+                    lineDataSet.setValueTextSize(10);
+                    lineDataSet.setCircleHoleColor(colorValue);
                     ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-                    dataSets.add(lineDataSet1);
-
+                    dataSets.add(lineDataSet);
                     LineData data = new LineData(dataSets);
                     lineChart.setData(data);
                     lineChart.invalidate();
 
-                    Log.v("#PageTrending -> ", "Updated");
+                    Log.v("#PageTrending -> ", "Trending updated");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -128,20 +132,6 @@ public class PageTrending extends Fragment {
             }
         });
 
-        mRequestQueue.add(request);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        fetchNews("CoronaVirus");
-        Log.v("#PageTrending -> ", "onResume");
-
-    }
-
-    private ArrayList<Entry> dataValues1() {
-        ArrayList<Entry> dataVals = new ArrayList<Entry>();
-
-        return dataVals;
+        requestQueue.add(request);
     }
 }

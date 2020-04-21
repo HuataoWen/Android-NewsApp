@@ -7,22 +7,14 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
-        app:tabMode="scrollable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:tabMode="scrollable"
         app:tabTextColor="@color/colorPrimaryDark" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/headlinesSwipeRefresh"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/headlinesViewPager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/headlinesViewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+        android:layout_height="match_parent" />
 
 </LinearLayout>

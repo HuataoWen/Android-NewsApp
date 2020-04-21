@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 import static android.content.Context.MODE_PRIVATE;
 
 public class LocalStorage {
-    private static final String FILE_NAME = "newsBookmarks.txt";
+    private static final String FILE_NAME = "newsBookmarks2.txt";
 
     public static void saveNews(JSONArray newsList, Context context) {
         FileOutputStream fos = null;
@@ -45,7 +45,7 @@ public class LocalStorage {
         for (int i = 0; i < newsList.length(); i++) {
             try {
                 tmp = newsList.getJSONObject(i);
-                if (news.getString("id").equals(tmp.getString("id"))) {
+                if (news.getString("newsId").equals(tmp.getString("newsId"))) {
                     return;
                 }
             } catch (JSONException e) {
@@ -64,7 +64,7 @@ public class LocalStorage {
             try {
                 JSONObject tmp = new JSONObject();
                 tmp = oldNewsList.getJSONObject(i);
-                if (id.equals(tmp.getString("id"))) {
+                if (id.equals(tmp.getString("newsId"))) {
                     continue;
                 }
                 newNewsList.put(tmp);
@@ -117,7 +117,7 @@ public class LocalStorage {
             try {
                 JSONObject tmp = new JSONObject();
                 tmp = oldNewsList.getJSONObject(i);
-                if (id.equals(tmp.getString("id"))) {
+                if (id.equals(tmp.getString("newsId"))) {
                     return true;
                 }
             } catch (JSONException e) {

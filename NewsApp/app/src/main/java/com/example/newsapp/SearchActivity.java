@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,27 +37,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity {
-    String keyword;
-
-    LinearLayout loader;
-
-    private RequestQueue mRequestQueue = null;
+    private String keyword;
+    private LinearLayout loader;
+    private RequestQueue requestQueue = null;
 
     private Toolbar toolbar;
-    TextView toolbarTitle;
-
-    String newsID;
-    String newsTitle;
-    String newsImageUrl;
-    String newsTag;
-    String newsDate;
-    String newsDescription;
-    String newsUrl;
+    private TextView toolbarTitle;
 
     private ArrayList<NewsCard> newsList;
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView recyclerView;
-    private BigCardAdapter bigCardAdapter = null;
+    private NewsCardAdapter newsCardAdapter = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Override
@@ -66,13 +55,16 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        loader = findViewById(R.id.loader);
-        loader.setVisibility(View.VISIBLE);
-
-        mRequestQueue = Volley.newRequestQueue(SearchActivity.this); // Internet
+        Log.v("#SearchActivity -> ", "Start onCreate");
 
         Intent intent = getIntent();
-        keyword = intent.getStringExtra("newsID");
+        keyword = intent.getStringExtra("keyword");
+        Log.v("#SearchActivity -> ", "Get intent keyword: " + keyword);
+        requestQueue = Volley.newRequestQueue(SearchActivity.this); // Internet
+        newsList = new ArrayList<>();
+
+        loader = findViewById(R.id.loader);
+        loader.setVisibility(View.VISIBLE);
 
         toolbar = findViewById(R.id.articleToolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -86,21 +78,25 @@ public class SearchActivity extends AppCompatActivity {
         toolbarTitle = findViewById(R.id.toolbarTitle);
         toolbarTitle.setText("Search Results for " + keyword);
 
-        newsList = new ArrayList<>();
-        recyclerView = findViewById(R.id.recyclerView); // Display view
+        recyclerView = findViewById(R.id.recyclerViewSearch); // Display view
+        recyclerView.setHasFixedSize(true); // Keep size
 
-        mSwipeRefreshLayout = findViewById(R.id.SwipeRefreshLayout); // Pull to efresh
+        layoutManager = new LinearLayoutManager(SearchActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+        // Separator
+        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        horizontalDivider.setDrawable(ContextCompat.getDrawable(SearchActivity.this, R.drawable.line_divider));
+        recyclerView.addItemDecoration(horizontalDivider);
 
-        // Pull refresh function
+        mSwipeRefreshLayout = findViewById(R.id.SwipeRefreshLayout); // Pull to refresh
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (mRequestQueue != null) {
-                    fetchNews();
-                }
+                fetchNews();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
+        Log.v("#SearchActivity -> ", "End onCreate");
 
         fetchNews();
     }
@@ -108,15 +104,12 @@ public class SearchActivity extends AppCompatActivity {
     public void fetchNews() {
         newsList.clear();
         // Need to check for the first time call
-        if (bigCardAdapter != null) {
-            bigCardAdapter.notifyDataSetChanged();
+        if (newsCardAdapter != null) {
+            newsCardAdapter.notifyDataSetChanged();
         }
         loader.setVisibility(View.VISIBLE);
-
-        //String url = "http://10.0.2.2:4000/mobile/search/search?keyword=" + keyword;
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/search/search?keyword=" + keyword;
-
-        Log.v("#SearchActivity -> ", "Start fetch news");
+        String url = MyUtil.getBackendUrl() + "search/search?keyword=" + keyword;
+        Log.v("#SearchActivity -> ", "Start fetch news" + keyword);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -125,17 +118,11 @@ public class SearchActivity extends AppCompatActivity {
                     JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject newsItem = jsonArray.getJSONObject(i);
-                        newsID = newsItem.getString("newsId");
-                        newsTitle = newsItem.getString("newsTitle");
-                        newsImageUrl = newsItem.getString("newsImageUrl");
-                        newsTag = newsItem.getString("newsTag");
-                        newsDate = newsItem.getString("newsPubDate");
-                        newsUrl = newsItem.getString("newsUrl");
-                        String timeDiff = MyUtil.GetTimeDifference(newsDate);
-                        newsList.add(new NewsCard(newsID, newsUrl, newsImageUrl, newsTitle, newsTag, timeDiff + " ago | " + newsTag, "Apr 4", getBookmarkIconById(newsID, SearchActivity.this)));
+                        newsList.add(new NewsCard(newsItem, SearchActivity.this, "other"));
                     }
                     loader.setVisibility(View.INVISIBLE);
                     buildRecyclerView();
+                    Log.v("#SearchActivity -> ", "Updated news");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -147,29 +134,20 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        mRequestQueue.add(request);
+        requestQueue.add(request);
     }
 
     public void buildRecyclerView() {
         Log.v("#SearchActivity -> ", "Start buildRecyclerView");
-        recyclerView.setHasFixedSize(true); // Keep size
-
-        layoutManager = new LinearLayoutManager(SearchActivity.this);
-        bigCardAdapter = new BigCardAdapter(SearchActivity.this, "Big", newsList);
-        recyclerView.setLayoutManager(layoutManager);
-        // Separator
-        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
-        horizontalDivider.setDrawable(ContextCompat.getDrawable(SearchActivity.this, R.drawable.line_divider));
-        recyclerView.addItemDecoration(horizontalDivider);
-        recyclerView.setAdapter(bigCardAdapter);
-
-        bigCardAdapter.setOnItemClickListener(new BigCardAdapter.OnItemClickListener() {
+        newsCardAdapter = new NewsCardAdapter(SearchActivity.this, "Big", newsList);
+        recyclerView.setAdapter(newsCardAdapter);
+        newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
                 Log.v("#SearchActivity -> ", "Open article");
                 Intent detailIntent = new Intent(SearchActivity.this, ArticleActivity.class);
                 NewsCard newsCard = newsList.get(position);
-                detailIntent.putExtra("newsID", newsCard.getID());
+                detailIntent.putExtra("newsId", newsCard.getNewsId());
                 startActivityForResult(detailIntent, 1);
             }
 
@@ -183,14 +161,14 @@ public class SearchActivity extends AppCompatActivity {
                 dialogBuilder.setView(view);
 
                 ImageView dialogImage = ((ImageView) view.findViewById(R.id.dialogImage));
-                Picasso.with(SearchActivity.this).load(newsList.get(position).getImageResource()).into(dialogImage);
+                Picasso.with(SearchActivity.this).load(newsList.get(position).getNewsImageUrl()).into(dialogImage);
 
                 TextView dialogTitle = view.findViewById(R.id.dialogTitle);
-                dialogTitle.setText(newsList.get(position).getTitle());
+                dialogTitle.setText(newsList.get(position).getNewsTitle());
 
                 ImageButton imageButtonShare = view.findViewById(R.id.imageButton);
                 final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
-                imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), SearchActivity.this));
+                imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getNewsId(), SearchActivity.this));
                 final AlertDialog aLertDialog = dialogBuilder.create();
                 aLertDialog.show();
 
@@ -199,7 +177,7 @@ public class SearchActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Log.v("#SearchActivity -> ", "Clicked share icon");
-                        String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getIUrl() + "&hashtags=CSCI571NewsSearch";
+                        String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getNewsUrl() + "&hashtags=CSCI571NewsSearch";
                         Uri uri = Uri.parse(url);
                         Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
                         startActivity(intent1);
@@ -211,13 +189,11 @@ public class SearchActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Log.v("#SearchActivity -> ", "Clicked bookmark icon");
-                        String newsId = newsList.get(position).getID();
+                        String newsId = newsList.get(position).getNewsId();
                         if (LocalStorage.isInBookmark(newsId, SearchActivity.this)) {
-
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
                             removeNewsFromBookmarks(newsId, position);
                         } else {
-
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_red_24dp);
                             addNewsToBookmarks(newsId, position);
                         }
@@ -227,7 +203,7 @@ public class SearchActivity extends AppCompatActivity {
 
             // Click bookmark icon on viewpager
             public void onBookmarkClick(int position) {
-                String newsId = newsList.get(position).getID();
+                String newsId = newsList.get(position).getNewsId();
                 if (position != RecyclerView.NO_POSITION) {
                     if (LocalStorage.isInBookmark(newsId, SearchActivity.this)) {
                         Log.v("#SearchActivity -> ", "Remove news(viewpager)");
@@ -245,27 +221,27 @@ public class SearchActivity extends AppCompatActivity {
         Log.v("#SearchActivity -> ", "Add news");
         JSONObject news = new JSONObject();
         try {
-            news.put("id", newsId);
-            news.put("url", newsList.get(position).getIUrl());
-            news.put("title", newsList.get(position).getTitle());
-            news.put("urlToImage", newsList.get(position).getImageResource());
-            news.put("publishDate", newsList.get(position).getPublishDate());
-            news.put("tag", newsList.get(position).getTag());
+            news.put("newsId", newsId);
+            news.put("newsUrl", newsList.get(position).getNewsUrl());
+            news.put("newsTitle", newsList.get(position).getNewsTitle());
+            news.put("newsImageUrl", newsList.get(position).getNewsImageUrl());
+            news.put("newsPubDate", newsList.get(position).getNewsPubDate());
+            news.put("newsTag", newsList.get(position).getNewsTag());
         } catch (JSONException e) {
             e.printStackTrace();
         }
         LocalStorage.insertNews(news, SearchActivity.this);
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
-        bigCardAdapter.notifyDataSetChanged();
-        Toast.makeText(SearchActivity.this, newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+        newsCardAdapter.notifyDataSetChanged();
+        Toast.makeText(SearchActivity.this, newsList.get(position).getNewsTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
     private void removeNewsFromBookmarks(String newsId, int position) {
         Log.v("#SearchActivity -> ", "Remove news");
         LocalStorage.deleteNews(newsId, SearchActivity.this);
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
-        bigCardAdapter.notifyDataSetChanged();
-        Toast.makeText(SearchActivity.this, newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        newsCardAdapter.notifyDataSetChanged();
+        Toast.makeText(SearchActivity.this, newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 
     public static int getBookmarkIconById(String id, Context context) {

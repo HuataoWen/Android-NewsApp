@@ -2,24 +2,22 @@ package com.example.newsapp;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +41,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.card.MaterialCardView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -50,16 +49,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -67,39 +56,45 @@ import java.util.Locale;
 import android.Manifest;
 
 import static android.app.Activity.RESULT_OK;
-import static java.time.Month.AUGUST;
 
-public class PageHome extends Fragment {
+public class PageHome extends Fragment implements MainActivity.MyInterface {
     private ArrayList<NewsCard> newsList;
-    private RequestQueue mRequestQueue = null;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private RequestQueue requestQueue = null;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView recyclerView;
-    private BigCardAdapter bigCardAdapter = null;
+    private NewsCardAdapter newsCardAdapter = null;
     private Geocoder geocoder;
 
+    MaterialCardView materialCardView;
     private ImageView weatherImageView;
     private TextView weatherCityView;
     private TextView weatherStateView;
     private TextView weatherTemperatureView;
     private TextView weatherTypeView;
 
-
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     String city, state;
+    JSONArray responseJsonArray = null;
+    boolean isNeedUpdateBookmark = false;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.page_home, container, false);
 
+        Log.v("#PageHome -> ", "Start onCreate");
+        MainActivity.showLoader();
 
+        materialCardView = view.findViewById(R.id.weatherCard);
+        geocoder = new Geocoder(getActivity(), Locale.getDefault());
         weatherImageView = view.findViewById(R.id.weatherImageView);
         weatherCityView = view.findViewById(R.id.weatherCityView);
         weatherStateView = view.findViewById(R.id.weatherStateView);
         weatherTemperatureView = view.findViewById(R.id.weatherTemperatureView);
         weatherTypeView = view.findViewById(R.id.weatherTypeView);
+        materialCardView.setVisibility(View.INVISIBLE);
 
         //Check Location Permission already granted or not
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -109,29 +104,72 @@ public class PageHome extends Fragment {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
 
-        geocoder = new Geocoder(getActivity(), Locale.getDefault());
-
         newsList = new ArrayList<>();
-        mRequestQueue = Volley.newRequestQueue(getActivity()); // Internet
-        mSwipeRefreshLayout = view.findViewById(R.id.swiperefresh_items); // Pull to efresh
+        requestQueue = Volley.newRequestQueue(getActivity()); // Internet
+        swipeRefreshLayout = view.findViewById(R.id.swiperefresh_items); // Pull to refresh
         recyclerView = view.findViewById(R.id.recyclerView); // Display view
-
-        // Get news
-        fetchNews();
+        recyclerView.setHasFixedSize(true); // Keep size
+        layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        // Separator
+        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        horizontalDivider.setDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.line_divider));
+        recyclerView.addItemDecoration(horizontalDivider);
+        newsCardAdapter = new NewsCardAdapter(getActivity(), "Big", newsList);
+        recyclerView.setAdapter(newsCardAdapter);
 
         // Pull refresh function
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (mRequestQueue != null) {
-                    getCurrentLocation();
-                    fetchNews();
-                }
-                mSwipeRefreshLayout.setRefreshing(false);
+                getCurrentLocation();
+                fetchNews();
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
+        Log.v("#PageHome -> ", "End onCreate");
+
         return view;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.v("#PageHome -> ", "Back from other article activity");
+        if (resultCode == RESULT_OK) {
+            isNeedUpdateBookmark = true;
+        }
+    }
+
+    public void requireUpdateBookmark(){
+        isNeedUpdateBookmark = true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("#PageHome -> ", "onResume");
+        if (isNeedUpdateBookmark) {
+            updateBookmark();
+            isNeedUpdateBookmark = false;
+        } else {
+            fetchNews();
+        }
+    }
+
+    private void updateBookmark() {
+        Log.v("#PageHome -> ", "updateBookmark");
+        newsList.clear();
+        for (int i = 0; i < responseJsonArray.length(); i++) {
+            JSONObject newsItem = null;
+            try {
+                newsItem = responseJsonArray.getJSONObject(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            newsList.add(new NewsCard(newsItem, getActivity(), "other"));
+        }
+        buildRecyclerView();
     }
 
     private void getCurrentLocation() {
@@ -166,12 +204,6 @@ public class PageHome extends Fragment {
             }
 
             private void updateWeatherCard() {
-                weatherCityView.setText(city);
-                weatherStateView.setText(state);
-                fetchWeather();
-            }
-
-            private void fetchWeather() {
                 Log.v("#PageHome -> ", "Start fetch weather");
                 String url = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=bb6deec062930bb99b4524f160a1e291";
                 JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -188,7 +220,10 @@ public class PageHome extends Fragment {
                             weatherTemperatureView.setText(Integer.toString(weatherTemperature));
                             weatherImageView.setImageResource(getWeatherImageByType(weatherType));
                             weatherTypeView.setText(weatherType);
-
+                            weatherCityView.setText(city);
+                            weatherStateView.setText(state);
+                            materialCardView.setVisibility(View.VISIBLE);
+                            Log.v("#PageHome -> ", "Updated weather card");
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -200,7 +235,7 @@ public class PageHome extends Fragment {
                     }
                 });
 
-                mRequestQueue.add(request);
+                requestQueue.add(request);
             }
 
             private int getWeatherImageByType(String weatherType) {
@@ -225,13 +260,11 @@ public class PageHome extends Fragment {
 
     private void fetchNews() {
         newsList.clear();
-        if (bigCardAdapter != null) {
-            bigCardAdapter.notifyDataSetChanged();
+        if (newsCardAdapter != null) {
+            newsCardAdapter.notifyDataSetChanged();
         }
         MainActivity.showLoader();
-
-        //String url = "http://10.0.2.2:4000/mobile/home";
-        String url = "http://ec2-52-14-208-196.us-east-2.compute.amazonaws.com:4000/mobile/home";
+        String url = MyUtil.getBackendUrl() + "home";
 
         Log.v("#PageHome -> ", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -239,32 +272,14 @@ public class PageHome extends Fragment {
             public void onResponse(JSONObject response) {
                 try {
                     Log.v("#PageHome -> ", "Fetched news");
-                    JSONArray jsonArray = response.getJSONArray("result");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject newsItem = jsonArray.getJSONObject(i);
-                        String newsID = newsItem.getString("newsID");
-                        String newsURL = newsItem.getString("newsURL");
-                        String newsTitle = newsItem.getString("newsTitle");
-                        String newsImageURL = newsItem.getString("newsImageURL");
-                        String newsTag = newsItem.getString("newsTag");
-                        String newsTime = newsItem.getString("newsTime");
-
-
-                        String timeDiff = MyUtil.GetTimeDifference(newsTime);
-
-                        Log.v("#PageHome -> ", "Start fetch news");
-                        newsList.add(new NewsCard(
-                                newsID,
-                                newsURL,
-                                newsImageURL,
-                                newsTitle,
-                                newsTag,
-                                timeDiff + " ago | " + newsTag,
-                                newsTime,
-                                getBookmarkIconById(newsID, getActivity())));
+                    responseJsonArray = response.getJSONArray("result");
+                    for (int i = 0; i < responseJsonArray.length(); i++) {
+                        JSONObject newsItem = responseJsonArray.getJSONObject(i);
+                        newsList.add(new NewsCard(newsItem, getActivity(), "other"));
                     }
                     MainActivity.hideLoader();
                     buildRecyclerView();
+                    Log.v("#PageHome -> ", "Updated news");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -276,39 +291,20 @@ public class PageHome extends Fragment {
             }
         });
 
-        mRequestQueue.add(request);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            Log.v("#PageHome -> ", "Back from article activity");
-            fetchNews();
-        }
+        requestQueue.add(request);
     }
 
     public void buildRecyclerView() {
         Log.v("#PageHome -> ", "Start buildRecyclerView");
-        recyclerView.setHasFixedSize(true); // Keep size
-
-        layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
-        bigCardAdapter = new BigCardAdapter(getActivity(), "Big", newsList);
-        recyclerView.setLayoutManager(layoutManager);
-        // Separator
-        DividerItemDecoration horizontalDivider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
-        horizontalDivider.setDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.line_divider));
-        recyclerView.addItemDecoration(horizontalDivider);
-        recyclerView.setAdapter(bigCardAdapter);
-
-
-        bigCardAdapter.setOnItemClickListener(new BigCardAdapter.OnItemClickListener() {
+        newsCardAdapter = new NewsCardAdapter(getActivity(), "Big", newsList);
+        recyclerView.setAdapter(newsCardAdapter);
+        newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
                 Log.v("#PageHome -> ", "Open article");
                 Intent detailIntent = new Intent(getActivity(), ArticleActivity.class);
                 NewsCard newsCard = newsList.get(position);
-                detailIntent.putExtra("newsID", newsCard.getID());
+                detailIntent.putExtra("newsId", newsCard.getNewsId());
                 startActivityForResult(detailIntent, 1);
             }
 
@@ -321,14 +317,14 @@ public class PageHome extends Fragment {
                 View view = inflater.inflate(R.layout.layout_dialog, null);
 
                 ImageView dialogImage = ((ImageView) view.findViewById(R.id.dialogImage));
-                Picasso.with(getActivity()).load(newsList.get(position).getImageResource()).into(dialogImage);
+                Picasso.with(getActivity()).load(newsList.get(position).getNewsImageUrl()).into(dialogImage);
 
                 TextView dialogTitle = view.findViewById(R.id.dialogTitle);
-                dialogTitle.setText(newsList.get(position).getTitle());
+                dialogTitle.setText(newsList.get(position).getNewsTitle());
 
                 ImageButton imageButtonShare = view.findViewById(R.id.imageButton);
                 final ImageButton imageButtonDelete = view.findViewById(R.id.imageButton2);
-                imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getID(), getActivity()));
+                imageButtonDelete.setImageResource(getBookmarkIconById(newsList.get(position).getNewsId(), getActivity()));
 
                 dialogBuilder.setView(view);
                 final AlertDialog aLertDialog = dialogBuilder.create();
@@ -339,10 +335,8 @@ public class PageHome extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Log.v("#PageHome -> ", "Clicked share icon");
-                        String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getIUrl() + "&hashtags=CSCI571NewsSearch";
-                        Uri uri = Uri.parse(url);
-                        Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(intent1);
+                        Intent intent = MyUtil.getShareIntent(newsList.get(position).getNewsUrl());
+                        startActivity(intent);
                     }
                 });
 
@@ -351,13 +345,11 @@ public class PageHome extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Log.v("#PageHome -> ", "Clicked bookmark icon");
-                        String newsId = newsList.get(position).getID();
+                        String newsId = newsList.get(position).getNewsId();
                         if (LocalStorage.isInBookmark(newsId, getActivity())) {
-
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
                             removeNewsFromBookmarks(newsId, position);
                         } else {
-
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_red_24dp);
                             addNewsToBookmarks(newsId, position);
                         }
@@ -367,7 +359,7 @@ public class PageHome extends Fragment {
 
             // Click bookmark icon on viewpager
             public void onBookmarkClick(int position) {
-                String newsId = newsList.get(position).getID();
+                String newsId = newsList.get(position).getNewsId();
                 if (position != RecyclerView.NO_POSITION) {
                     if (LocalStorage.isInBookmark(newsId, getActivity())) {
                         Log.v("#PageHome -> ", "Remove news(viewpager)");
@@ -385,27 +377,27 @@ public class PageHome extends Fragment {
         Log.v("#PageHome -> ", "Add news");
         JSONObject news = new JSONObject();
         try {
-            news.put("id", newsId);
-            news.put("url", newsList.get(position).getIUrl());
-            news.put("title", newsList.get(position).getTitle());
-            news.put("urlToImage", newsList.get(position).getImageResource());
-            news.put("publishDate", newsList.get(position).getPublishDate());
-            news.put("tag", newsList.get(position).getTag());
+            news.put("newsId", newsId);
+            news.put("newsUrl", newsList.get(position).getNewsUrl());
+            news.put("newsTitle", newsList.get(position).getNewsTitle());
+            news.put("newsImageUrl", newsList.get(position).getNewsImageUrl());
+            news.put("newsPubDate", newsList.get(position).getNewsPubDate());
+            news.put("newsTag", newsList.get(position).getNewsTag());
         } catch (JSONException e) {
             e.printStackTrace();
         }
         LocalStorage.insertNews(news, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
-        bigCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+        newsCardAdapter.notifyDataSetChanged();
+        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
     private void removeNewsFromBookmarks(String newsId, int position) {
         Log.v("#PageHome -> ", "Remove news");
         LocalStorage.deleteNews(newsId, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
-        bigCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        newsCardAdapter.notifyDataSetChanged();
+        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 
     public static int getBookmarkIconById(String id, Context context) {
@@ -422,13 +414,12 @@ public class PageHome extends Fragment {
         Log.v("#PageHome -> ", "Request get location permission");
         switch (requestCode) {
             case LOCATION_PERMISSION_REQUEST_CODE:
-
                 // Check Location permission is granted or not
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getActivity(), "Location  permission granted", Toast.LENGTH_SHORT).show();
+                    Log.v("#PageHome -> ", "Location  permission granted");
                     getCurrentLocation();
                 } else {
-                    Toast.makeText(getActivity(), "Location  permission denied", Toast.LENGTH_SHORT).show();
+                    Log.v("#PageHome -> ", "Location  permission denied");
                 }
                 break;
         }
