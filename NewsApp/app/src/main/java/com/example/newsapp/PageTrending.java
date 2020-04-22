@@ -85,6 +85,7 @@ public class PageTrending extends Fragment implements MainActivity.FragmentInter
     public void onResume() {
         super.onResume();
         Log.v("-->PageTrending", "Enter onResume");
+        MainActivity.hideLoader();
         fetchTrending();
     }
 

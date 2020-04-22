@@ -65,8 +65,9 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
     @Override
     public void onResume() {
         super.onResume();
-        buildRecyclerView();
         Log.v("-->PageBookmark", "Enter onResume");
+        MainActivity.hideLoader();
+        buildRecyclerView();
     }
 
     public void buildRecyclerView() {
@@ -75,8 +76,11 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
 
         JSONArray jsonArray = LocalStorage.getNews(getActivity());
         if (jsonArray.length() == 0) {
+            newsCardAdapter = new NewsCardAdapter(getActivity(), "Small", newsList);
+            bookmarkRecyclerView.setAdapter(newsCardAdapter);
             bookmarkEmptyTextView.setVisibility(View.VISIBLE);
         } else {
+            bookmarkEmptyTextView.setVisibility(View.INVISIBLE);
             Log.v("#PageBookmark", "Read local storage");
             for (int i = 0; i < jsonArray.length(); i++) {
                 try {

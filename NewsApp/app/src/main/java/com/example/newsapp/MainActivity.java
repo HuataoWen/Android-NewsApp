@@ -61,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private MenuItem menuItem;
 
-    private List<FragmentInterface> fragmentInterfaces;
+    private List<FragmentInterface> fragmentInterfaces = null;
+
+    private int selectedPage = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Log.v("-->MainActivity", "Enter onCreate");
-        checkLocationPermission();
 
         mainActivityLoader = findViewById(R.id.mainActivityLoader);
 
@@ -85,21 +86,27 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationAdapter bottomNavigationAdapter = new BottomNavigationAdapter(getSupportFragmentManager(), fragments);
         viewPager.setAdapter(bottomNavigationAdapter);
 
+        checkLocationPermission();
+
         // Menu click event
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.nav_home:
+                        selectedPage = 0;
                         viewPager.setCurrentItem(0);
                         break;
                     case R.id.nav_headlines:
+                        selectedPage = 1;
                         viewPager.setCurrentItem(1);
                         break;
                     case R.id.nav_trending:
+                        selectedPage = 2;
                         viewPager.setCurrentItem(2);
                         break;
                     case R.id.nav_bookmark:
+                        selectedPage = 3;
                         viewPager.setCurrentItem(3);
                         break;
                     default:
@@ -136,6 +143,10 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         Log.v("-->MainActivity", "Enter onResume");
+        if (fragmentInterfaces != null){
+            fragmentInterfaces.get(selectedPage).requireUpdate(1);
+        }
+
         // Test
         //fragmentInterfaces.get(2).requireUpdate(1);
     }
@@ -145,19 +156,19 @@ public class MainActivity extends AppCompatActivity {
         fragmentInterfaces = new ArrayList<>();
 
         Fragment fragment = new PageHome();
-        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragmentInterfaces.add((FragmentInterface) fragment);
         fragments.add(fragment);
 
         fragment = new PageHeadlines();
-        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragmentInterfaces.add((FragmentInterface) fragment);
         fragments.add(fragment);
 
         fragment = new PageTrending();
-        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragmentInterfaces.add((FragmentInterface) fragment);
         fragments.add(fragment);
 
         fragment = new PageBookmark();
-        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragmentInterfaces.add((FragmentInterface) fragment);
         fragments.add(fragment);
     }
 
@@ -165,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         //Check Location Permission already granted or not
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.v("-->MainActivity", "Location permission is granted");
+            fragmentInterfaces.get(selectedPage).requireUpdate(2);
         } else {
             Log.v("-->MainActivity", "Location permission not granted. Requesting");
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
@@ -180,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
                 // Check Location permission is granted or not
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.v("-->MainActivity", "Location  permission granted");
+                    fragmentInterfaces.get(selectedPage).requireUpdate(2);
                 } else {
                     Log.v("-->MainActivity", "Location  permission denied");
                 }

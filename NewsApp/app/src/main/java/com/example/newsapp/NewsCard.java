@@ -1,9 +1,16 @@
 package com.example.newsapp;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 
 public class NewsCard {
@@ -74,6 +81,68 @@ public class NewsCard {
     }
 
     private String getPubDateTagLocal() {
+        if (displayPage.equals("bookmark")) {
+            LocalDateTime newsDateTime = LocalDateTime.of(Integer.parseInt(newsPubDate.substring(0, 4)),
+                    Integer.parseInt(newsPubDate.substring(5, 7)),
+                    Integer.parseInt(newsPubDate.substring(8, 10)),
+                    Integer.parseInt(newsPubDate.substring(11, 13)),
+                    Integer.parseInt(newsPubDate.substring(14, 16)),
+                    Integer.parseInt(newsPubDate.substring(17, 19)));
+            String date = Integer.toString(newsDateTime.getDayOfMonth());
+            String month = newsDateTime.getMonth().getDisplayName(TextStyle.SHORT, Locale.US);
+            return date + " " + month + " | " + newsTag;
+        } else {
+            LocalDateTime localDateTime = LocalDateTime.now();
+            /*Log.v("-->PageHome", "Localtime: " + Integer.toString(localDateTime.getYear()) + " " +
+                    Integer.toString(localDateTime.getMonthValue()) + " " +
+                    Integer.toString(localDateTime.getDayOfMonth()) + " " +
+                    Integer.toString(localDateTime.getHour()) + " " +
+                    Integer.toString(localDateTime.getMinute()) + " " +
+                    Integer.toString(localDateTime.getSecond()));*/
+
+            LocalDateTime newsDateTime = LocalDateTime.of(Integer.parseInt(newsPubDate.substring(0, 4)),
+                    Integer.parseInt(newsPubDate.substring(5, 7)),
+                    Integer.parseInt(newsPubDate.substring(8, 10)),
+                    Integer.parseInt(newsPubDate.substring(11, 13)),
+                    Integer.parseInt(newsPubDate.substring(14, 16)),
+                    Integer.parseInt(newsPubDate.substring(17, 19)));
+            /*Log.v("-->PageHome", "newsDateTime: " + Integer.toString(newsDateTime.getYear()) + " " +
+                    Integer.toString(newsDateTime.getMonthValue()) + " " +
+                    Integer.toString(newsDateTime.getDayOfMonth()) + " " +
+                    Integer.toString(newsDateTime.getHour()) + " " +
+                    Integer.toString(newsDateTime.getMinute()) + " " +
+                    Integer.toString(newsDateTime.getSecond()));*/
+
+            ZonedDateTime newsDateTimeInUTC = newsDateTime.atZone(ZoneId.of("UTC"));
+            ZonedDateTime newsLocalDateTime = newsDateTimeInUTC.withZoneSameInstant(ZoneId.of("America/Los_Angeles"));
+            /*Log.v("-->PageHome", "newsLocalDateTime: " + Integer.toString(newsLocalDateTime.getYear()) + " " +
+                    Integer.toString(newsLocalDateTime.getMonthValue()) + " " +
+                    Integer.toString(newsLocalDateTime.getDayOfMonth()) + " " +
+                    Integer.toString(newsLocalDateTime.getHour()) + " " +
+                    Integer.toString(newsLocalDateTime.getMinute()) + " " +
+                    Integer.toString(newsLocalDateTime.getSecond()));*/
+
+            int diff = localDateTime.getMonthValue() - newsLocalDateTime.getMonthValue();
+            if (diff > 0) {
+                return diff + "M ago | " + newsTag;
+            }
+            diff = localDateTime.getDayOfMonth() - newsLocalDateTime.getDayOfMonth();
+            if (diff > 0) {
+                return diff + "d ago | " + newsTag;
+            }
+            diff = localDateTime.getHour() - newsLocalDateTime.getHour();
+            if (diff > 0) {
+                return diff + "h ago | " + newsTag;
+            }
+            diff = localDateTime.getMinute() - newsLocalDateTime.getMinute();
+            if (diff > 0) {
+                return diff + "m ago | " + newsTag;
+            }
+            diff = localDateTime.getSecond() - newsLocalDateTime.getSecond();
+            if (diff > 0) {
+                return diff + "s ago | " + newsTag;
+            }
+        }
         return "3s ago | " + newsTag;
     }
 

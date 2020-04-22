@@ -1,7 +1,6 @@
 package com.example.newsapp;
 
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
@@ -67,10 +66,12 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     private TextView weatherTemperatureView;
     private TextView weatherTypeView;
 
+    private String testDate = "2020-04-22T06:21:17Z";
 
     String city, state;
     JSONArray responseJsonArray = null;
     boolean isNeedUpdateBookmark = false;
+    boolean locationChecked = false;
 
     @Nullable
     @Override
@@ -129,15 +130,31 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     @Override
     public void requireUpdate(int requestCode) {
         Log.v("-->PageHome", "Enter requireUpdate");
+        if (requestCode == 2) {
+            //MainActivity.showLoader();
+            //getCurrentLocation();
+            //fetchNews();
+            locationChecked = true;
+        } else {
+            isNeedUpdateBookmark = true;
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         Log.v("-->PageHome", "Enter onResume");
-        MainActivity.showLoader();
-        getCurrentLocation();
-        fetchNews();
+
+        if (locationChecked) {
+            if (isNeedUpdateBookmark && responseJsonArray != null) {
+                updateBookmark();
+            } else {
+                MainActivity.showLoader();
+                getCurrentLocation();
+                fetchNews();
+            }
+            isNeedUpdateBookmark = false;
+        }
     }
 
     private void updateBookmark() {
@@ -175,8 +192,14 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                     Log.v("#PageHome -> ", "Location coordinate: " + latitude.toString() + " " + longitude.toString());
                     try {
                         addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        city = addresses.get(0).getLocality();
-                        state = addresses.get(0).getAdminArea();
+                        if (addresses.size() == 0) {
+                            city = "Los Angeles";
+                            state = "California";
+                        } else {
+                            city = addresses.get(0).getLocality();
+                            state = addresses.get(0).getAdminArea();
+                        }
+
                         Log.v("#PageHome -> ", "Location: " + city + " " + state);
 
                         updateWeatherCard();
@@ -239,7 +262,6 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
             }
         }, Looper.getMainLooper());
     }
-
 
     private void fetchNews() {
         newsList.clear();
