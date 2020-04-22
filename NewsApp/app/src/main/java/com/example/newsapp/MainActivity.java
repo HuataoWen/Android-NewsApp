@@ -5,6 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
 import android.content.Intent;
@@ -19,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -27,16 +32,21 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    private static LinearLayout mainActivityLoader;
 
     Toolbar toolbar;
     private ArrayAdapter<String> suggestionsAdapter;
@@ -46,17 +56,109 @@ public class MainActivity extends AppCompatActivity {
     private String searchKeyword;
     private RequestQueue requestQueue;
 
+    private ViewPager viewPager;
+    private List<Fragment> fragments;
+    private BottomNavigationView bottomNavigationView;
+    private MenuItem menuItem;
+
+    private List<FragmentInterface> fragmentInterfaces;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.v("-->MainActivity", "onCreate");
+        Log.v("-->MainActivity", "Enter onCreate");
         checkLocationPermission();
+
+        mainActivityLoader = findViewById(R.id.mainActivityLoader);
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         requestQueue = Volley.newRequestQueue(this);
+
+        viewPager = findViewById(R.id.viewPager);
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+
+        initFragments();
+
+        BottomNavigationAdapter bottomNavigationAdapter = new BottomNavigationAdapter(getSupportFragmentManager(), fragments);
+        viewPager.setAdapter(bottomNavigationAdapter);
+
+        // Menu click event
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.nav_home:
+                        viewPager.setCurrentItem(0);
+                        break;
+                    case R.id.nav_headlines:
+                        viewPager.setCurrentItem(1);
+                        break;
+                    case R.id.nav_trending:
+                        viewPager.setCurrentItem(2);
+                        break;
+                    case R.id.nav_bookmark:
+                        viewPager.setCurrentItem(3);
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+
+        // Menu swipe event
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                // The first time to start app
+                if (menuItem == null) {
+                    menuItem = bottomNavigationView.getMenu().getItem(0);
+                }
+                menuItem.setChecked(false); // Deselect previous page
+                menuItem = bottomNavigationView.getMenu().getItem(position);
+                menuItem.setChecked(true); // Select current page
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("-->MainActivity", "Enter onResume");
+        // Test
+        //fragmentInterfaces.get(2).requireUpdate(1);
+    }
+
+    private void initFragments() {
+        fragments = new ArrayList<>();
+        fragmentInterfaces = new ArrayList<>();
+
+        Fragment fragment = new PageHome();
+        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragments.add(fragment);
+
+        fragment = new PageHeadlines();
+        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragments.add(fragment);
+
+        fragment = new PageTrending();
+        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragments.add(fragment);
+
+        fragment = new PageBookmark();
+        fragmentInterfaces.add((FragmentInterface)fragment);
+        fragments.add(fragment);
     }
 
     private void checkLocationPermission() {
@@ -82,6 +184,30 @@ public class MainActivity extends AppCompatActivity {
                     Log.v("-->MainActivity", "Location  permission denied");
                 }
                 break;
+        }
+    }
+
+    public interface FragmentInterface {
+        void requireUpdate(int requestCode);
+    }
+
+    private class BottomNavigationAdapter extends FragmentPagerAdapter {
+        private List<Fragment> fragments;
+
+        public BottomNavigationAdapter(@NonNull FragmentManager fm, List<Fragment> fragments) {
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            this.fragments = fragments;
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
         }
     }
 
@@ -123,9 +249,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Log.v("-->MainActivity", "Open SearchActivity with search keyword " + searchKeyword);
-                //Intent detailIntent = new Intent(MainActivity.this, SearchActivity.class);
-                //detailIntent.putExtra("keyword", query);
-                //startActivityForResult(detailIntent, 1);
+                Intent detailIntent = new Intent(MainActivity.this, SearchActivity.class);
+                detailIntent.putExtra("keyword", query);
+                startActivityForResult(detailIntent, 1);
                 return false;
             }
 
@@ -178,5 +304,13 @@ public class MainActivity extends AppCompatActivity {
         };
 
         requestQueue.add(request);
+    }
+
+    public static void showLoader() {
+        mainActivityLoader.setVisibility(View.VISIBLE);
+    }
+
+    public static void hideLoader() {
+        mainActivityLoader.setVisibility(View.INVISIBLE);
     }
 }
