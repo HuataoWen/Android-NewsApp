@@ -220,8 +220,28 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                             Log.v("-->PageHome", "Weather type: " + weatherType);
 
                             weatherTemperatureView.setText(Integer.toString(weatherTemperature) + "°C");
-                            weatherImageView.setImageResource(getWeatherImageByType(weatherType));
+                            //weatherImageView.setImageResource(getWeatherImageByType(weatherType));
                             weatherTypeView.setText(weatherType);
+                            switch (weatherType) {
+                                case "Clouds":
+                                    weatherImageView.setImageResource(R.drawable.cloudy_weather);
+                                    break;
+                                case "Clear":
+                                    weatherImageView.setImageResource(R.drawable.clear_weather);
+                                    break;
+                                case "Snow":
+                                    weatherImageView.setImageResource(R.drawable.snowy_weather);
+                                    break;
+                                case "Rain":
+                                    weatherImageView.setImageResource(R.drawable.rainy_weather);
+                                    break;
+                                case "Thunderstorm":
+                                    weatherImageView.setImageResource(R.drawable.thunder_weather);
+                                    break;
+                                default:
+                                    weatherImageView.setImageResource(R.drawable.sunny_weather);
+                                    weatherTypeView.setText("Sunny");
+                            }
                             weatherCityView.setText(city);
                             weatherStateView.setText(state);
                             materialCardView.setVisibility(View.VISIBLE);
