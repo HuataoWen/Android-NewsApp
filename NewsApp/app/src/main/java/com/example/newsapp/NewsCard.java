@@ -90,7 +90,7 @@ public class NewsCard {
                     Integer.parseInt(newsPubDate.substring(17, 19)));
             String date = Integer.toString(newsDateTime.getDayOfMonth());
             String month = newsDateTime.getMonth().getDisplayName(TextStyle.SHORT, Locale.US);
-            return date + " " + month + " | " + newsTag;
+            return date + " " + month;
         } else {
             LocalDateTime localDateTime = LocalDateTime.now();
             /*Log.v("-->PageHome", "Localtime: " + Integer.toString(localDateTime.getYear()) + " " +
@@ -124,23 +124,23 @@ public class NewsCard {
 
             int diff = localDateTime.getMonthValue() - newsLocalDateTime.getMonthValue();
             if (diff > 0) {
-                return diff + "M ago | " + newsTag;
+                return diff + "M ago";
             }
             diff = localDateTime.getDayOfMonth() - newsLocalDateTime.getDayOfMonth();
             if (diff > 0) {
-                return diff + "d ago | " + newsTag;
+                return diff + "d ago";
             }
             diff = localDateTime.getHour() - newsLocalDateTime.getHour();
             if (diff > 0) {
-                return diff + "h ago | " + newsTag;
+                return diff + "h ago";
             }
             diff = localDateTime.getMinute() - newsLocalDateTime.getMinute();
             if (diff > 0) {
-                return diff + "m ago | " + newsTag;
+                return diff + "m ago";
             }
             diff = localDateTime.getSecond() - newsLocalDateTime.getSecond();
             if (diff > 0) {
-                return diff + "s ago | " + newsTag;
+                return diff + "s ago";
             }
         }
         return "3s ago | " + newsTag;

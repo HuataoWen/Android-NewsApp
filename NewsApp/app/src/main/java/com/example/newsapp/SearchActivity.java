@@ -55,11 +55,11 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        Log.v("#SearchActivity -> ", "Start onCreate");
+        Log.v("-->SearchActivity", "Start onCreate");
 
         Intent intent = getIntent();
         keyword = intent.getStringExtra("keyword");
-        Log.v("#SearchActivity -> ", "Get intent keyword: " + keyword);
+        Log.v("-->SearchActivity", "Get intent keyword: " + keyword);
         requestQueue = Volley.newRequestQueue(SearchActivity.this); // Internet
         newsList = new ArrayList<>();
 
@@ -96,7 +96,7 @@ public class SearchActivity extends AppCompatActivity {
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-        Log.v("#SearchActivity -> ", "End onCreate");
+        Log.v("-->SearchActivity", "End onCreate");
 
         fetchNews();
     }
@@ -109,12 +109,12 @@ public class SearchActivity extends AppCompatActivity {
         }
         loader.setVisibility(View.VISIBLE);
         String url = MyUtil.getBackendUrl() + "search/search?keyword=" + keyword;
-        Log.v("#SearchActivity -> ", "Start fetch news " + keyword);
+        Log.v("-->SearchActivity", "Start fetch news " + keyword);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("#SearchActivity -> ", "Fetched news");
+                    Log.v("-->SearchActivity", "Fetched news");
                     JSONArray jsonArray = response.getJSONArray("result");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject newsItem = jsonArray.getJSONObject(i);
@@ -122,7 +122,7 @@ public class SearchActivity extends AppCompatActivity {
                     }
                     loader.setVisibility(View.INVISIBLE);
                     buildRecyclerView();
-                    Log.v("#SearchActivity -> ", "Updated news");
+                    Log.v("-->SearchActivity", "Updated news");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -138,13 +138,13 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void buildRecyclerView() {
-        Log.v("#SearchActivity -> ", "Start buildRecyclerView");
+        Log.v("-->SearchActivity", "Start buildRecyclerView");
         newsCardAdapter = new NewsCardAdapter(SearchActivity.this, "Big", newsList);
         recyclerView.setAdapter(newsCardAdapter);
         newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
-                Log.v("#SearchActivity -> ", "Open article");
+                Log.v("-->SearchActivity", "Open article");
                 Intent detailIntent = new Intent(SearchActivity.this, ArticleActivity.class);
                 NewsCard newsCard = newsList.get(position);
                 detailIntent.putExtra("newsId", newsCard.getNewsId());
@@ -153,7 +153,7 @@ public class SearchActivity extends AppCompatActivity {
 
             // Expand dialog
             public void onItemLongClick(final int position) {
-                Log.v("#SearchActivity -> ", "Expand dialog");
+                Log.v("-->SearchActivity", "Expand dialog");
                 // Init dialog
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(SearchActivity.this);
                 LayoutInflater inflater = SearchActivity.this.getLayoutInflater();
@@ -176,7 +176,7 @@ public class SearchActivity extends AppCompatActivity {
                 imageButtonShare.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.v("#SearchActivity -> ", "Clicked share icon");
+                        Log.v("-->SearchActivity", "Clicked share icon");
                         String url = "https://twitter.com/intent/tweet?text=Check out this Link:&url=" + newsList.get(position).getNewsUrl() + "&hashtags=CSCI571NewsSearch";
                         Uri uri = Uri.parse(url);
                         Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
@@ -188,7 +188,7 @@ public class SearchActivity extends AppCompatActivity {
                 imageButtonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.v("#SearchActivity -> ", "Clicked bookmark icon");
+                        Log.v("-->SearchActivity", "Clicked bookmark icon");
                         String newsId = newsList.get(position).getNewsId();
                         if (LocalStorage.isInBookmark(newsId, SearchActivity.this)) {
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
@@ -206,10 +206,8 @@ public class SearchActivity extends AppCompatActivity {
                 String newsId = newsList.get(position).getNewsId();
                 if (position != RecyclerView.NO_POSITION) {
                     if (LocalStorage.isInBookmark(newsId, SearchActivity.this)) {
-                        Log.v("#SearchActivity -> ", "Remove news(viewpager)");
                         removeNewsFromBookmarks(newsId, position);
                     } else {
-                        Log.v("#SearchActivity -> ", "Add news(viewpager)");
                         addNewsToBookmarks(newsId, position);
                     }
                 }
@@ -218,7 +216,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void addNewsToBookmarks(String newsId, int position) {
-        Log.v("#SearchActivity -> ", "Add news");
+        Log.v("-->SearchActivity", "Add news");
         JSONObject news = new JSONObject();
         try {
             news.put("newsId", newsId);
@@ -233,15 +231,15 @@ public class SearchActivity extends AppCompatActivity {
         LocalStorage.insertNews(news, SearchActivity.this);
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(SearchActivity.this, newsList.get(position).getNewsTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(SearchActivity.this, '"' + newsList.get(position).getNewsTitle() + '"' + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
     private void removeNewsFromBookmarks(String newsId, int position) {
-        Log.v("#SearchActivity -> ", "Remove news");
+        Log.v("-->SearchActivity", "Remove news");
         LocalStorage.deleteNews(newsId, SearchActivity.this);
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(SearchActivity.this, newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(SearchActivity.this, '"' + newsList.get(position).getNewsTitle() + '"' + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 
     public static int getBookmarkIconById(String id, Context context) {

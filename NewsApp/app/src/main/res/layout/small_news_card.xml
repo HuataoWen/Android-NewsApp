@@ -45,7 +45,35 @@
             android:text="Date"
             android:layout_alignBottom="@id/newsCardBookmarkView"
             android:textColor="@android:color/darker_gray"
-            android:textSize="15sp" />
+            android:textSize="15sp" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="|"
+            android:layout_marginBottom="6dp"
+            android:layout_alignBottom="@id/newsCardBookmarkView"
+            android:layout_toRightOf="@id/newsCardDateTagView"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="15sp" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/newsCardTagView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:text="Date"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_alignBottom="@id/newsCardBookmarkView"
+            android:layout_toRightOf="@id/line"
+            android:textColor="@android:color/darker_gray"
+            android:layout_toLeftOf="@id/newsCardBookmarkView"
+            android:textSize="15sp" >
+        </TextView>
 
         <ImageView
             android:id="@+id/newsCardBookmarkView"

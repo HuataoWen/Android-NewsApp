@@ -66,23 +66,23 @@ public class ArticleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_article);
 
         // Init
-        Log.v("#ArticleActivity -> ", "Start onCreate");
+        Log.v("-->ArticleActivity", "Start onCreate");
 
         // Obtain intent
         Intent intent = getIntent();
         newsId = intent.getStringExtra("newsId");
-        Log.v("#ArticleActivity -> ", "Get intent newsId: " + newsId);
+        Log.v("-->ArticleActivity", "Get intent newsId: " + newsId);
         requestQueue = Volley.newRequestQueue(ArticleActivity.this);
         initView();
         createClickSpan();
         getArticle();
         setClickListener();
 
-        Log.v("#ArticleActivity -> ", "End onCreate");
+        Log.v("-->ArticleActivity", "End onCreate");
     }
 
     private void initView() {
-        Log.v("#ArticleActivity -> ", "Init view");
+        Log.v("-->ArticleActivity", "Init view");
         toolbar = findViewById(R.id.articleToolbar);
         articleBookmark = findViewById(R.id.articleBookmark);
         articleShare = findViewById(R.id.articleShare);
@@ -101,13 +101,13 @@ public class ArticleActivity extends AppCompatActivity {
     }
 
     private void createClickSpan() {
-        Log.v("#ArticleActivity -> ", "Create clickSpan");
+        Log.v("-->ArticleActivity", "Create clickSpan");
         String text = "View Full Article";
         SpannableString spannableString = new SpannableString(text);
         ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
-                Log.v("articleActivity -> ", "Open article URL");
+                Log.v("-->ArticleActivity", "Open article URL");
                 Uri uri = Uri.parse(newsUrl);
                 Intent intent1 = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent1);
@@ -127,7 +127,7 @@ public class ArticleActivity extends AppCompatActivity {
     }
 
     private void setClickListener() {
-        Log.v("#ArticleActivity -> ", "Set clickListener");
+        Log.v("-->ArticleActivity", "Set clickListener");
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,7 +140,7 @@ public class ArticleActivity extends AppCompatActivity {
         articleBookmark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("#ArticleActivity -> ", "Clicked bookmark icon");
+                Log.v("-->ArticleActivity", "Clicked bookmark icon");
                 bookmarkClickHandle();
             }
         });
@@ -148,7 +148,7 @@ public class ArticleActivity extends AppCompatActivity {
         articleShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("#ArticleActivity -> ", "Clicked share icon");
+                Log.v("-->ArticleActivity", "Clicked share icon");
                 Intent intent = MyUtil.getShareIntent(newsUrl);
                 startActivity(intent);
             }
@@ -156,13 +156,13 @@ public class ArticleActivity extends AppCompatActivity {
     }
 
     private void getArticle() {
-        Log.v("#ArticleActivity -> ", "Start fetch news");
+        Log.v("-->ArticleActivity", "Start fetch news");
         String url = MyUtil.getBackendUrl() + "getArticle?article_id=" + newsId + "&source=true";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("#ArticleActivity -> ", "Fetched news");
+                    Log.v("-->ArticleActivity", "Fetched news");
                     JSONArray jsonArray = response.getJSONArray("result");
                     JSONObject newsItem = jsonArray.getJSONObject(0);
                     newsId = newsItem.getString("newsId");
@@ -183,7 +183,7 @@ public class ArticleActivity extends AppCompatActivity {
 
                     hideLoader();
                     articleCard.setVisibility(View.VISIBLE);
-                    Log.v("#ArticleActivity -> ", "Updated view");
+                    Log.v("-->ArticleActivity", "Updated view");
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -201,12 +201,12 @@ public class ArticleActivity extends AppCompatActivity {
 
     private void bookmarkClickHandle() {
         if (LocalStorage.isInBookmark(newsId, ArticleActivity.this)) {
-            Log.v("#ArticleActivity -> ", "Remove news");
+            Log.v("-->ArticleActivity", "Remove news");
             LocalStorage.deleteNews(newsId, ArticleActivity.this);
             articleBookmark.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
-            Toast.makeText(ArticleActivity.this, newsTitle + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ArticleActivity.this, '"' + newsTitle + '"' + " was removed from bookmarks", Toast.LENGTH_SHORT).show();
         } else {
-            Log.v("#ArticleActivity -> ", "Add news");
+            Log.v("-->ArticleActivity", "Add news");
             JSONObject newsObj = new JSONObject();
             try {
                 newsObj.put("newsId", newsId);
@@ -220,7 +220,7 @@ public class ArticleActivity extends AppCompatActivity {
             }
             LocalStorage.insertNews(newsObj, ArticleActivity.this);
             articleBookmark.setImageResource(R.drawable.ic_bookmark_red_24dp);
-            Toast.makeText(ArticleActivity.this, newsTitle + " was added to bookmarks", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ArticleActivity.this, '"' + newsTitle + '"' + " was added to bookmarks", Toast.LENGTH_SHORT).show();
         }
     }
 

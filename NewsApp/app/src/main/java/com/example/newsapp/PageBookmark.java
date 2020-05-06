@@ -71,7 +71,7 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
     }
 
     public void buildRecyclerView() {
-        Log.v("#PageBookmark", "Start buildRecyclerView");
+        Log.v("-->PageBookmark", "Start buildRecyclerView");
         newsList.clear();
 
         JSONArray jsonArray = LocalStorage.getNews(getActivity());
@@ -81,7 +81,7 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
             bookmarkEmptyTextView.setVisibility(View.VISIBLE);
         } else {
             bookmarkEmptyTextView.setVisibility(View.INVISIBLE);
-            Log.v("#PageBookmark", "Read local storage");
+            Log.v("-->PageBookmark", "Read local storage");
             for (int i = 0; i < jsonArray.length(); i++) {
                 try {
                     JSONObject newsItem = jsonArray.getJSONObject(i);
@@ -91,14 +91,14 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
                 }
             }
 
-            Log.v("#PageBookmark", "Update adapter");
+            Log.v("-->PageBookmark", "Update adapter");
             newsCardAdapter = new NewsCardAdapter(getActivity(), "Small", newsList);
             bookmarkRecyclerView.setAdapter(newsCardAdapter);
 
             newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
                 // Open article
                 public void onItemClick(int position) {
-                    Log.v("RageBookmark -> ", "Open article");
+                    Log.v("-->PageBookmark", "Open article");
                     Intent intent = new Intent(getActivity(), ArticleActivity.class);
                     intent.putExtra("newsId", newsList.get(position).getNewsId());
                     startActivityForResult(intent, 1);
@@ -106,7 +106,7 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
 
                 // Expand dialog
                 public void onItemLongClick(final int position) {
-                    Log.v("#PageBookmark", "Build dialog");
+                    Log.v("-->PageBookmark", "Build dialog");
                     LayoutInflater inflater = getActivity().getLayoutInflater();
                     View view = inflater.inflate(R.layout.layout_dialog, null);
 
@@ -131,7 +131,7 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
                     imageButtonShare.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Log.v("RageBookmark -> ", "Share article");
+                            Log.v("-->PageBookmark", "Share article");
                             String url = newsList.get(position).getNewsUrl();
                             Intent intent = MyUtil.getShareIntent(url);
                             startActivity(intent);
@@ -159,10 +159,10 @@ public class PageBookmark extends Fragment implements MainActivity.FragmentInter
     }
 
     public void removeNews(int position, Context context) {
-        Log.v("RageBookmark -> ", "Remove article from bookmark");
+        Log.v("-->PageBookmark", "Remove article from bookmark");
         String newsId = newsList.get(position).getNewsId();
         LocalStorage.deleteNews(newsId, getActivity());
-        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), '"' + newsList.get(position).getNewsTitle() + '"' + " was removed from bookmarks", Toast.LENGTH_LONG).show();
         newsList.remove(position);
         newsCardAdapter.notifyItemRemoved(position);
         if (newsList.size() == 0) bookmarkEmptyTextView.setVisibility(View.VISIBLE);

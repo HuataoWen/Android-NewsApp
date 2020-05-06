@@ -72,7 +72,7 @@ public class PageTrending extends Fragment implements MainActivity.FragmentInter
                 return false;
             }
         });
-        Log.v("#PageTrending -> ", "End onCreate");
+        Log.v("-->PageTrending", "End onCreate");
         return view;
     }
 
@@ -90,14 +90,14 @@ public class PageTrending extends Fragment implements MainActivity.FragmentInter
     }
 
     public void fetchTrending() {
-        Log.v("#PageTrending -> ", "Start fetch " + searchWord + " trending");
+        Log.v("-->PageTrending", "Start fetch " + searchWord + " trending");
         String url = MyUtil.getBackendUrl() + "getTrending?keyword=" + searchWord;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("#PageTrending -> ", "Fetched trending");
+                    Log.v("-->PageTrending", "Fetched trending");
                     JSONArray jsonArray = response.getJSONArray("result");
                     ArrayList<Entry> dataValues = new ArrayList<Entry>();
                     for (int i = 0; i < jsonArray.length(); i++) {
@@ -117,7 +117,7 @@ public class PageTrending extends Fragment implements MainActivity.FragmentInter
                     lineChart.setData(data);
                     lineChart.invalidate();
 
-                    Log.v("#PageTrending -> ", "Trending updated");
+                    Log.v("-->PageTrending", "Trending updated");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

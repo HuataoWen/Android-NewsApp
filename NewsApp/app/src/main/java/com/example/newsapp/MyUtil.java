@@ -9,7 +9,7 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 
 public class MyUtil {
-    private static boolean backendAWS = true;
+    private static boolean backendAWS = false;
 
     public static String getBackendUrl() {
         if (backendAWS) {

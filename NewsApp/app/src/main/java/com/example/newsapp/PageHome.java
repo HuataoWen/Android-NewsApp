@@ -114,14 +114,14 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
             }
         });
 
-        Log.v("#PageHome -> ", "End onCreate");
+        Log.v("-->PageHome", "End onCreate");
 
         return view;
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.v("#PageHome -> ", "Back from other article activity");
+        Log.v("-->PageHome", "Back from other article activity");
         if (resultCode == RESULT_OK) {
             isNeedUpdateBookmark = true;
         }
@@ -158,7 +158,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     }
 
     private void updateBookmark() {
-        Log.v("#PageHome -> ", "updateBookmark");
+        Log.v("-->PageHome", "updateBookmark");
         newsList.clear();
         for (int i = 0; i < responseJsonArray.length(); i++) {
             JSONObject newsItem = null;
@@ -173,7 +173,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     }
 
     private void getCurrentLocation() {
-        Log.v("#PageHome -> ", "Start get location");
+        Log.v("-->PageHome", "Start get location");
         final LocationRequest locationRequest = new LocationRequest();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(3000);
@@ -189,18 +189,14 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                     int latestLocationIndex = locationResult.getLocations().size() - 1;
                     Double latitude = locationResult.getLocations().get(latestLocationIndex).getLatitude();
                     Double longitude = locationResult.getLocations().get(latestLocationIndex).getLongitude();
-                    Log.v("#PageHome -> ", "Location coordinate: " + latitude.toString() + " " + longitude.toString());
+                    Log.v("-->PageHome", "Location coordinate: " + latitude.toString() + " " + longitude.toString());
                     try {
                         addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        if (addresses.size() == 0) {
-                            city = "Los Angeles";
-                            state = "California";
-                        } else {
-                            city = addresses.get(0).getLocality();
-                            state = addresses.get(0).getAdminArea();
-                        }
 
-                        Log.v("#PageHome -> ", "Location: " + city + " " + state);
+                        city = addresses.get(0).getLocality();
+                        state = addresses.get(0).getAdminArea();
+
+                        Log.v("-->PageHome", "Location: " + city + " " + state);
 
                         updateWeatherCard();
                     } catch (IOException e) {
@@ -210,18 +206,18 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
             }
 
             private void updateWeatherCard() {
-                Log.v("#PageHome -> ", "Start fetch weather");
+                Log.v("-->PageHome", "Start fetch weather");
                 String url = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=bb6deec062930bb99b4524f160a1e291";
                 JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.v("#PageHome -> ", "Fetched weather");
+                            Log.v("-->PageHome", "Fetched weather");
                             int weatherTemperature = response.getJSONObject("main").getInt("temp");
                             String weatherType = response.getJSONArray("weather").getJSONObject(0).getString("main");
 
-                            Log.v("#PageHome -> ", "Weather temperature: " + weatherTemperature);
-                            Log.v("#PageHome -> ", "Weather type: " + weatherType);
+                            Log.v("-->PageHome", "Weather temperature: " + weatherTemperature);
+                            Log.v("-->PageHome", "Weather type: " + weatherType);
 
                             weatherTemperatureView.setText(Integer.toString(weatherTemperature) + "°C");
                             weatherImageView.setImageResource(getWeatherImageByType(weatherType));
@@ -229,7 +225,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                             weatherCityView.setText(city);
                             weatherStateView.setText(state);
                             materialCardView.setVisibility(View.VISIBLE);
-                            Log.v("#PageHome -> ", "Updated weather card");
+                            Log.v("-->PageHome", "Updated weather card");
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -271,12 +267,12 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
         MainActivity.showLoader();
         String url = MyUtil.getBackendUrl() + "home";
 
-        Log.v("#PageHome -> ", "Start fetch news");
+        Log.v("-->PageHome", "Start fetch news");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.v("#PageHome -> ", "Fetched news");
+                    Log.v("-->PageHome", "Fetched news");
                     responseJsonArray = response.getJSONArray("result");
                     for (int i = 0; i < responseJsonArray.length(); i++) {
                         JSONObject newsItem = responseJsonArray.getJSONObject(i);
@@ -284,7 +280,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                     }
                     MainActivity.hideLoader();
                     buildRecyclerView();
-                    Log.v("#PageHome -> ", "Updated news");
+                    Log.v("-->PageHome", "Updated news");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -300,13 +296,13 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     }
 
     public void buildRecyclerView() {
-        Log.v("#PageHome -> ", "Start buildRecyclerView");
+        Log.v("-->PageHome", "Start buildRecyclerView");
         newsCardAdapter = new NewsCardAdapter(getActivity(), "Big", newsList);
         recyclerView.setAdapter(newsCardAdapter);
         newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
-                Log.v("#PageHome -> ", "Open article");
+                Log.v("-->PageHome", "Open article");
                 Intent detailIntent = new Intent(getActivity(), ArticleActivity.class);
                 NewsCard newsCard = newsList.get(position);
                 detailIntent.putExtra("newsId", newsCard.getNewsId());
@@ -315,7 +311,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
 
             // Expand dialog
             public void onItemLongClick(final int position) {
-                Log.v("#PageHome -> ", "Expand dialog");
+                Log.v("-->PageHome", "Expand dialog");
                 // Init dialog
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
                 LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -339,7 +335,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                 imageButtonShare.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.v("#PageHome -> ", "Clicked share icon");
+                        Log.v("-->PageHome", "Clicked share icon");
                         Intent intent = MyUtil.getShareIntent(newsList.get(position).getNewsUrl());
                         startActivity(intent);
                     }
@@ -349,7 +345,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                 imageButtonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.v("#PageHome -> ", "Clicked bookmark icon");
+                        Log.v("-->PageHome", "Clicked bookmark icon");
                         String newsId = newsList.get(position).getNewsId();
                         if (LocalStorage.isInBookmark(newsId, getActivity())) {
                             imageButtonDelete.setImageResource(R.drawable.ic_bookmark_border_red_24dp);
@@ -367,10 +363,10 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
                 String newsId = newsList.get(position).getNewsId();
                 if (position != RecyclerView.NO_POSITION) {
                     if (LocalStorage.isInBookmark(newsId, getActivity())) {
-                        Log.v("#PageHome -> ", "Remove news(viewpager)");
+                        Log.v("-->PageHome", "Remove news(viewpager)");
                         removeNewsFromBookmarks(newsId, position);
                     } else {
-                        Log.v("#PageHome -> ", "Add news(viewpager)");
+                        Log.v("-->PageHome", "Add news(viewpager)");
                         addNewsToBookmarks(newsId, position);
                     }
                 }
@@ -379,7 +375,7 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
     }
 
     private void addNewsToBookmarks(String newsId, int position) {
-        Log.v("#PageHome -> ", "Add news");
+        Log.v("-->PageHome", "Add news");
         JSONObject news = new JSONObject();
         try {
             news.put("newsId", newsId);
@@ -394,15 +390,15 @@ public class PageHome extends Fragment implements MainActivity.FragmentInterface
         LocalStorage.insertNews(news, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), '"' + newsList.get(position).getNewsTitle() + '"' + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
     private void removeNewsFromBookmarks(String newsId, int position) {
-        Log.v("#PageHome -> ", "Remove news");
+        Log.v("-->PageHome", "Remove news");
         LocalStorage.deleteNews(newsId, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), '"' + newsList.get(position).getNewsTitle() + '"' + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 
     public static int getBookmarkIconById(String id, Context context) {

@@ -62,7 +62,7 @@ public class TabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_tab, container, false);
 
-        Log.v("#TabFragment ->", "Start onCreate " + tabSection);
+        Log.v("-->TabFragment", "Start onCreate " + tabSection);
 
         requestQueue = Volley.newRequestQueue(getActivity());
         newsList = new ArrayList<>();
@@ -88,7 +88,7 @@ public class TabFragment extends Fragment {
             }
         });
 
-        Log.v("#TabFragment ->", "End onCreate " + tabSection);
+        Log.v("-->TabFragment", "End onCreate " + tabSection);
 
         return view;
     }
@@ -109,7 +109,7 @@ public class TabFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            Log.v("#TabFragment ->", "Back from other article activity");
+            Log.v("-->TabFragment", "Back from other article activity");
             isNeedUpdateBookmark = true;
         }
     }
@@ -138,7 +138,7 @@ public class TabFragment extends Fragment {
 
         String url = MyUtil.getBackendUrl() + tabSection.toLowerCase();
 
-        Log.v("#TabFragment ->", "Start fetch news " + tabSection);
+        Log.v("-->TabFragment", "Start fetch news " + tabSection);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -151,7 +151,7 @@ public class TabFragment extends Fragment {
                     }
                     MainActivity.hideLoader();
                     buildRecyclerView();
-                    Log.v("#TabFragment ->", "Updated news for " + tabSection);
+                    Log.v("-->TabFragment", "Updated news for " + tabSection);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -174,7 +174,7 @@ public class TabFragment extends Fragment {
         newsCardAdapter.setOnItemClickListener(new NewsCardAdapter.OnItemClickListener() {
             // Open article
             public void onItemClick(int position) {
-                Log.v("#TabFragment ->", "Open article");
+                Log.v("-->TabFragment", "Open article");
                 Intent detailIntent = new Intent(getActivity(), ArticleActivity.class);
                 NewsCard newsCard = newsList.get(position);
                 detailIntent.putExtra("newsId", newsCard.getNewsId());
@@ -206,7 +206,7 @@ public class TabFragment extends Fragment {
                 imageButtonShare.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.v("#TabFragment ->", "Clicked share icon");
+                        Log.v("-->TabFragment", "Clicked share icon");
                         Intent intent = MyUtil.getShareIntent(newsList.get(position).getNewsUrl());
                         startActivity(intent);
                     }
@@ -251,7 +251,7 @@ public class TabFragment extends Fragment {
     }
 
     private void addNewsToBookmarks(String newsId, int position) {
-        Log.v("#TabFragment ->", "Add news");
+        Log.v("-->TabFragment", "Add news");
         JSONObject news = new JSONObject();
         try {
             news.put("newsId", newsId);
@@ -266,14 +266,14 @@ public class TabFragment extends Fragment {
         LocalStorage.insertNews(news, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was added to bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(),  '"' + newsList.get(position).getNewsTitle() + '"' + " was added to bookmarks", Toast.LENGTH_LONG).show();
     }
 
     private void removeNewsFromBookmarks(String newsId, int position) {
-        Log.v("#TabFragment ->", "Remove news");
+        Log.v("-->TabFragment", "Remove news");
         LocalStorage.deleteNews(newsId, getActivity());
         newsList.get(position).changeImageSource(R.drawable.ic_bookmark_border_red_24dp);
         newsCardAdapter.notifyDataSetChanged();
-        Toast.makeText(getActivity(), newsList.get(position).getNewsTitle() + " was removed from bookmarks", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), '"' + newsList.get(position).getNewsTitle() + '"' + " was removed from bookmarks", Toast.LENGTH_LONG).show();
     }
 }

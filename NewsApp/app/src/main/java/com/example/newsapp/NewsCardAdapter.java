@@ -43,6 +43,7 @@ public class NewsCardAdapter extends RecyclerView.Adapter<NewsCardAdapter.Exampl
         public ImageView newsCardImageView;
         public TextView newsCardTitleView;
         public TextView newsCardDateTagView;
+        public TextView newsCardTagView;
         public ImageView newsCardBookmarkView;
 
         public ExampleViewHolder(@NonNull View itemView, final OnItemClickListener listener) {
@@ -52,6 +53,7 @@ public class NewsCardAdapter extends RecyclerView.Adapter<NewsCardAdapter.Exampl
             newsCardTitleView.setMaxLines(3);
             newsCardTitleView.setEllipsize(TextUtils.TruncateAt.END);
             newsCardDateTagView = itemView.findViewById(R.id.newsCardDateTagView);
+            newsCardTagView = itemView.findViewById(R.id.newsCardTagView);
             newsCardBookmarkView = itemView.findViewById(R.id.newsCardBookmarkView);
 
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -112,11 +114,13 @@ public class NewsCardAdapter extends RecyclerView.Adapter<NewsCardAdapter.Exampl
         String newsImageUrl = currentItem.getNewsImageUrl();
         String newsTitle = currentItem.getNewsTitle();
         String newsPubDate = currentItem.getNewsPubDateTag();
+        String newsTag = currentItem.getNewsTag();
         int newsBookmarkSrc = currentItem.getNewsBookmarkSrc();
 
         Picasso.with(context).load(newsImageUrl).fit().centerInside().into(holder.newsCardImageView);
         holder.newsCardTitleView.setText(newsTitle);
         holder.newsCardDateTagView.setText(newsPubDate);
+        holder.newsCardTagView.setText(newsTag);
         holder.newsCardBookmarkView.setImageResource(newsBookmarkSrc);
     }
 

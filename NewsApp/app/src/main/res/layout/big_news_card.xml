@@ -47,6 +47,32 @@
             android:textSize="15sp" />
 
         <TextView
+            android:id="@+id/line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="|"
+            android:layout_marginBottom="4dp"
+            android:layout_alignBottom="@id/newsCardImageView"
+            android:layout_toRightOf="@id/newsCardDateTagView"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="15sp" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/newsCardTagView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:text="Date"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_alignBottom="@id/newsCardImageView"
+            android:layout_toRightOf="@id/line"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="15sp" >
+        </TextView>
+
+        <TextView
             android:id="@+id/newsCardTitleView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

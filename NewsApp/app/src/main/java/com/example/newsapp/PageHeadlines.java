@@ -31,7 +31,7 @@ public class PageHeadlines extends Fragment implements MainActivity.FragmentInte
         Log.v("-->PageHeadlines", "Enter onCreateView");
         final View view = inflater.inflate(R.layout.page_headlines, container, false);
 
-        Log.v("#PageHeadlines -> ", "Start onCreate");
+        Log.v("-->PageHeadlines", "Start onCreate");
         tabLayout = view.findViewById(R.id.tabLayout);
         viewPager = view.findViewById(R.id.headlinesViewPager);
 
@@ -41,7 +41,7 @@ public class PageHeadlines extends Fragment implements MainActivity.FragmentInte
         viewPager.setAdapter(tabAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        Log.v("#PageHeadlines -> ", "End onCreate");
+        Log.v("-->PageHeadlines", "End onCreate");
 
         return view;
     }
@@ -59,7 +59,7 @@ public class PageHeadlines extends Fragment implements MainActivity.FragmentInte
     }
 
     private void initFragment() {
-        Log.v("#PageHeadlines -> ", "Init fragment");
+        Log.v("-->PageHeadlines", "Init fragment");
 
         fragments = new ArrayList<Fragment>();
 
